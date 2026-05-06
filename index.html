@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phibo — Controle de Vendas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f4f0; --surface: #ffffff; --surface2: #eceae4;
+    --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+    --text: #1a1917; --text2: #6b6960; --text3: #9e9c94;
+    --blue: #2563eb; --green: #16a34a; --amber: #d97706; --red: #dc2626;
+    --radius: 10px; --radius-lg: 16px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1.5rem; }
+  header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+  .logo { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+  h1 { font-size: 22px; font-weight: 500; line-height: 1.2; }
+  .meta-info { font-size: 13px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+  .btn-refresh { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--text); color: #fff; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
+  .btn-refresh:hover { opacity: .8; }
+  .btn-refresh.loading { opacity: .5; pointer-events: none; }
+  .section-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 10px; margin-bottom: 1.75rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent, var(--blue)); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .card-label { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; letter-spacing: .04em; margin-bottom: 8px; text-transform: uppercase; }
+  .card-value { font-size: 20px; font-weight: 500; line-height: 1; margin-bottom: 6px; }
+  .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
+  .badge.good { background: #dcfce7; color: var(--green); }
+  .badge.warn { background: #fef3c7; color: var(--amber); }
+  .badge.bad  { background: #fee2e2; color: var(--red); }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .chart-card-full { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 12px; }
+  .chart-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .chart-sub { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; margin-bottom: 14px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .vendedor-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .vendedor-table th { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .vendedor-table th:not(:first-child) { text-align: right; }
+  .vendedor-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .vendedor-table td:not(:first-child) { text-align: right; font-family: 'DM Mono', monospace; }
+  .vendedor-table tr:last-child td { border-bottom: none; font-weight: 500; background: var(--surface2); }
+  .progress-bar { height: 4px; background: var(--border2); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; border-radius: 4px; }
+  .loading-state { text-align: center; padding: 4rem 2rem; color: var(--text3); }
+  .spinner { width: 28px; height: 28px; border: 2px solid var(--border2); border-top-color: var(--text); border-radius: 50%; margin: 0 auto 1rem; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-state { background: #fee2e2; border: 1px solid rgba(220,38,38,.2); border-radius: var(--radius-lg); padding: 1.5rem; color: var(--red); font-size: 13px; line-height: 1.6; }
+  .footer { text-align: center; font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 1.5rem; }
+  @media (max-width: 600px) { .charts-row { grid-template-columns: 1fr; } h1 { font-size: 18px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Phibo · Dashboard</div>
+    <h1>Controle de vendas — maio</h1>
+    <div class="meta-info" id="upd-info">Carregando...</div>
+  </div>
+  <button class="btn-refresh" id="btn-refresh" onclick="loadData()">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12.5 7A5.5 5.5 0 1 1 7 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 1.5h3.5V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Atualizar
+  </button>
+</header>
+
+<div id="main">
+  <div class="loading-state"><div class="spinner"></div><div>Buscando dados da planilha...</div></div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbw4UvTi6dsh4lWPpnQeGd_Q6cYBFDVUmbKH_vS87qOQrc_SrYiGFj6uZD9h95JLFCdBRw/exec';
+const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed'];
+let charts = {};
+
+function brl(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  if (typeof v === 'number') return v;
+  const s = String(v).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.');
+  return parseFloat(s) || 0;
+}
+function fmtBRL(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+function fmtShort(v) {
+  const a = Math.abs(v);
+  return 'R$' + (a >= 1000 ? (a/1000).toFixed(1).replace('.',',') + 'k' : Math.round(a));
+}
+function pct(r, m) { return m > 0 ? Math.round(r / m * 100) : 0; }
+function bc(p) { return p >= 100 ? 'good' : p >= 60 ? 'warn' : 'bad'; }
+function barC(p) { return p >= 100 ? '#16a34a' : p >= 60 ? '#d97706' : '#dc2626'; }
+function findRow(rows, kw) { return rows.find(r => r[0] && String(r[0]).toLowerCase().includes(kw.toLowerCase())); }
+function destroyCharts() { Object.values(charts).forEach(c => { try { c.destroy(); } catch(e){} }); charts = {}; }
+
+function parseDailyData(rows) {
+  // Datas chegam como ISO string: "2026-05-04T03:00:00.000Z"
+  // Valor do dia está no índice 12 (coluna M)
+  const daily = Array(31).fill(null);
+
+  rows.forEach(row => {
+    const dateCell = row[11];
+    const valCell  = row[12];
+
+    if (!dateCell) return;
+
+    const dateStr = String(dateCell).trim();
+
+    // Tenta ISO date: "2026-05-04T..."
+    let day = null;
+    const isoMatch = dateStr.match(/^\d{4}-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+      day = parseInt(isoMatch[2], 10);
+    }
+
+    // Fallback: "04/05" ou "4/05"
+    if (!day) {
+      const slashMatch = dateStr.match(/^(\d{1,2})\/(\d{2})/);
+      if (slashMatch) day = parseInt(slashMatch[1], 10);
+    }
+
+    if (!day || day < 1 || day > 31) return;
+
+    const val = brl(valCell);
+    if (val > 0) {
+      daily[day - 1] = val;
+    }
+  });
+
+  return daily;
+}
+
+function render(rows) {
+  destroyCharts();
+
+  // Estrutura confirmada pelo JSON:
+  // ["Jadilson", 1192, 11916, 13108, 6554, 144000, 130892, 0.09..., 5949.6..., "", "", "2026-05-01T...", "", ""]
+  // idx:           0     1      2      3     4       5        6         7          8    9   10    11        12   13
+  // Realizado = índice 3, Meta = índice 5
+
+  const jRow   = findRow(rows, 'jadilson') || [];
+  const mRow   = findRow(rows, 'marina')   || [];
+  const sRow   = findRow(rows, 'samuel')   || [];
+  const marRow = findRow(rows, 'maria')    || [];
+
+  const jR = brl(jRow[3]),  jM = brl(jRow[5]);
+  const mR = brl(mRow[3]),  mM = brl(mRow[5]);
+  const sR = brl(sRow[3]),  sM = brl(sRow[5]);
+
+  // Maria (renovações): ["Maria", 6815, 3407.5, 75000, 68185, ...]
+  // idx:                    0       1      2       3      4
+  // Realizado = índice 1, Meta = índice 3
+  const mrR = brl(marRow[1]);
+  const mrM = brl(marRow[3]);
+
+  const tR = jR+mR+sR, tM = jM+mM+sM;
+  const hoje = new Date().getDate();
+  const diasRest = Math.max(1, 31-hoje);
+  const mediaD = hoje > 0 ? tR/hoje : 0;
+  const nec = (tM-tR)/diasRest;
+  const pctT = pct(tR, tM);
+
+  const vends = [
+    {nome:'Jadilson', real:jR, meta:jM},
+    {nome:'Marina',   real:mR, meta:mM},
+    {nome:'Samuel',   real:sR, meta:sM},
+  ];
+
+  const daily = parseDailyData(rows);
+
+  let acc = 0;
+  const accArr = Array(31).fill(null);
+  daily.forEach((v,i) => { if(v!==null){acc+=v; accArr[i]=Math.round(acc);} });
+  const proj = Array.from({length:31}, (_,i) => Math.round(tM/31*(i+1)));
+
+  const dailyVals   = daily.map(v => v !== null ? v : 0);
+  const dailyColors = dailyVals.map(v => v > 0 ? '#2563eb' : 'rgba(0,0,0,0.07)');
+  const ativos      = daily.filter(v => v !== null && v > 0);
+  const melhor      = ativos.length > 0 ? Math.max(...ativos) : 0;
+  const mediaAtivo  = ativos.length > 0 ? ativos.reduce((a,b)=>a+b,0)/ativos.length : 0;
+  const diasPos     = ativos.length;
+
+  document.getElementById('main').innerHTML = `
+    <div class="section-label">Visão geral</div>
+    <div class="cards">
+      <div class="card" style="--accent:#2563eb">
+        <div class="card-label">Realizado novos</div>
+        <div class="card-value">${fmtBRL(tR)}</div>
+        <div><span class="badge ${bc(pctT)}">${pctT}% da meta</span></div>
+      </div>
+      <div class="card" style="--accent:${(tM-tR)>0?'#dc2626':'#16a34a'}">
+        <div class="card-label">Falta atingir</div>
+        <div class="card-value">${fmtBRL(Math.max(0,tM-tR))}</div>
+        <div style="font-size:11px;color:var(--text3)">meta: ${fmtBRL(tM)}</div>
+      </div>
+      <div class="card" style="--accent:${nec>mediaD?'#d97706':'#16a34a'}">
+        <div class="card-label">Média diária</div>
+        <div class="card-value">${fmtBRL(mediaD)}</div>
+        <div style="font-size:11px;color:var(--text3)">necessário: ${fmtBRL(nec)}/dia</div>
+      </div>
+      <div class="card" style="--accent:#7c3aed">
+        <div class="card-label">Renovações · Maria</div>
+        <div class="card-value">${fmtBRL(mrR)}</div>
+        <div><span class="badge ${bc(pct(mrR,mrM))}">${pct(mrR,mrM)}% — meta ${fmtBRL(mrM)}</span></div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:.25rem">Vendas por dia — maio</div>
+    <div class="chart-card-full">
+      <div class="chart-title">Receita diária (R$)</div>
+      <div class="chart-sub">apenas dias com venda registrada</div>
+      <div class="cards" style="margin-bottom:18px">
+        <div class="card" style="--accent:#2563eb;padding:12px 14px">
+          <div class="card-label">Melhor dia</div>
+          <div class="card-value" style="font-size:17px">${fmtBRL(melhor)}</div>
+        </div>
+        <div class="card" style="--accent:#16a34a;padding:12px 14px">
+          <div class="card-label">Média dia ativo</div>
+          <div class="card-value" style="font-size:17px">${fmtBRL(mediaAtivo)}</div>
+        </div>
+        <div class="card" style="--accent:#d97706;padding:12px 14px">
+          <div class="card-label">Dias com venda</div>
+          <div class="card-value" style="font-size:17px">${diasPos} / ${hoje}</div>
+          <div style="font-size:11px;color:var(--text3)">dias no mês</div>
+        </div>
+      </div>
+      <div style="position:relative;height:220px">
+        <canvas id="c-day" role="img" aria-label="Receita por dia em maio"></canvas>
+      </div>
+    </div>
+
+    <div class="section-label">Vendedores (novos)</div>
+    <div class="chart-card-full" style="padding:0;overflow:hidden">
+      <table class="vendedor-table">
+        <thead><tr><th>Vendedor</th><th>Realizado</th><th>Meta</th><th>Falta</th><th>% Meta</th></tr></thead>
+        <tbody>
+          ${vends.map(v=>`
+            <tr>
+              <td>${v.nome}</td>
+              <td>${fmtBRL(v.real)}</td>
+              <td>${fmtBRL(v.meta)}</td>
+              <td>${fmtBRL(Math.max(0,v.meta-v.real))}</td>
+              <td>
+                <span class="badge ${bc(pct(v.real,v.meta))}">${pct(v.real,v.meta)}%</span>
+                <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,pct(v.real,v.meta))}%;background:${barC(pct(v.real,v.meta))}"></div></div>
+              </td>
+            </tr>`).join('')}
+          <tr><td>Total</td><td>${fmtBRL(tR)}</td><td>${fmtBRL(tM)}</td><td>${fmtBRL(Math.max(0,tM-tR))}</td><td><span class="badge ${bc(pctT)}">${pctT}%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">% atingimento</div>
+        <div class="legend">${vends.map((v,i)=>`<div class="legend-item"><span class="legend-dot" style="background:${COLORS[i]}"></span>${v.nome} ${pct(v.real,v.meta)}%</div>`).join('')}</div>
+        <div style="position:relative;height:180px"><canvas id="c1" role="img" aria-label="% atingimento por vendedor"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Realizado vs meta</div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Realizado</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#d1d5db"></span>Meta</div>
+        </div>
+        <div style="position:relative;height:180px"><canvas id="c2" role="img" aria-label="Realizado vs meta por vendedor"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card-full">
+      <div class="chart-title">Evolução acumulada — maio</div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Acumulado real</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#dc2626;opacity:.5"></span>Projeção da meta</div>
+      </div>
+      <div style="position:relative;height:200px"><canvas id="c3" role="img" aria-label="Acumulado de vendas em maio"></canvas></div>
+    </div>
+
+    <div class="footer">Phibo · ao vivo · dia ${hoje}/31 · ${diasRest} dias restantes</div>
+  `;
+
+  charts.day = new Chart(document.getElementById('c-day'), {
+    type: 'bar',
+    data: { labels: Array.from({length:31},(_,i)=>`${i+1}`), datasets:[{data:dailyVals, backgroundColor:dailyColors, borderRadius:4, borderSkipped:false}] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.raw>0?fmtBRL(ctx.raw):''}} },
+      scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:11}}, grid:{color:'rgba(0,0,0,0.05)'}}, x:{ticks:{autoSkip:true,maxTicksLimit:16,font:{size:10}}, grid:{display:false}} } }
+  });
+
+  charts.c1 = new Chart(document.getElementById('c1'), {
+    type: 'bar',
+    data: { labels:vends.map(v=>v.nome), datasets:[{data:vends.map(v=>pct(v.real,v.meta)), backgroundColor:vends.map(v=>barC(pct(v.real,v.meta))), borderRadius:6, borderSkipped:false}] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{max:120,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}, x:{ticks:{font:{size:12}},grid:{display:false}} } }
+  });
+
+  charts.c2 = new Chart(document.getElementById('c2'), {
+    type: 'bar',
+    data: { labels:vends.map(v=>v.nome), datasets:[
+      {label:'Realizado',data:vends.map(v=>v.real),backgroundColor:COLORS.slice(0,3),borderRadius:6,borderSkipped:false},
+      {label:'Meta',data:vends.map(v=>v.meta),backgroundColor:'rgba(0,0,0,0.08)',borderRadius:6,borderSkipped:false}
+    ]},
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{ticks:{callback:v=>'R$'+(v/1000).toFixed(0)+'k',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}, x:{ticks:{font:{size:12}},grid:{display:false}} } }
+  });
+
+  charts.c3 = new Chart(document.getElementById('c3'), {
+    type: 'line',
+    data: { labels:Array.from({length:31},(_,i)=>i+1), datasets:[
+      {label:'Acumulado',data:accArr,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.07)',fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:'#2563eb',spanGaps:false},
+      {label:'Meta',data:proj,borderColor:'rgba(220,38,38,0.4)',borderDash:[5,4],pointRadius:0,fill:false}
+    ]},
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{ticks:{callback:v=>'R$'+(v/1000).toFixed(0)+'k',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}, x:{ticks:{autoSkip:true,maxTicksLimit:10,font:{size:11}},grid:{display:false}} } }
+  });
+}
+
+async function loadData() {
+  const btn = document.getElementById('btn-refresh');
+  btn.classList.add('loading');
+  document.getElementById('upd-info').textContent = 'Atualizando...';
+  try {
+    const res = await fetch(API);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!Array.isArray(rows)||rows.length===0) throw new Error('Planilha vazia ou sem dados');
+    render(rows);
+    const n = new Date();
+    document.getElementById('upd-info').textContent = `Atualizado às ${n.getHours()}:${String(n.getMinutes()).padStart(2,'0')} — ao vivo da planilha`;
+  } catch(e) {
+    document.getElementById('main').innerHTML = `<div class="error-state"><strong>Erro ao carregar dados</strong><br>${e.message}<br><br>Certifique-se de que o Apps Script está implantado como <strong>"Qualquer pessoa"</strong>.</div>`;
+    document.getElementById('upd-info').textContent = 'Erro ao carregar';
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>

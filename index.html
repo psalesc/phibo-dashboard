@@ -364,17 +364,17 @@ function render(rows, mes) {
     <div class="charts-row" style="margin-bottom:12px">
       <div class="chart-card">
         <div class="chart-title" style="font-size:12px;margin-bottom:8px">Samuel</div>
-        <div style="position:relative;height:120px"><canvas id="cv-samuel" role="img" aria-label="Vendas diárias Samuel"></canvas></div>
+        <div style="position:relative;height:160px"><canvas id="cv-samuel" role="img" aria-label="Vendas diárias Samuel"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-title" style="font-size:12px;margin-bottom:8px">Marina</div>
-        <div style="position:relative;height:120px"><canvas id="cv-marina" role="img" aria-label="Vendas diárias Marina"></canvas></div>
+        <div style="position:relative;height:160px"><canvas id="cv-marina" role="img" aria-label="Vendas diárias Marina"></canvas></div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
       <div class="chart-card">
         <div class="chart-title" style="font-size:12px;margin-bottom:8px">Maria (renovações)</div>
-        <div style="position:relative;height:120px"><canvas id="cv-maria" role="img" aria-label="Vendas diárias Maria"></canvas></div>
+        <div style="position:relative;height:160px"><canvas id="cv-maria" role="img" aria-label="Vendas diárias Maria"></canvas></div>
       </div>
       <div></div>
     </div>
@@ -420,7 +420,7 @@ function render(rows, mes) {
   function miniBarOpts() {
     return { responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.raw>0?fmtBRL(ctx.raw):''}} },
-      scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:9}}, grid:{color:'rgba(0,0,0,0.04)'}}, x:{ticks:{autoSkip:true,maxTicksLimit:8,font:{size:9}}, grid:{display:false}} }
+      scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:9}}, grid:{color:'rgba(0,0,0,0.04)'}}, x:{ticks:{autoSkip:false, maxRotation:0, font:{size:8}}, grid:{display:false}} }
     };
   }
 

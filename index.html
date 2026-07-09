@@ -417,30 +417,24 @@ function render(rows, mes) {
       scales:{ y:{ticks:{callback:v=>'R$'+(v/1000).toFixed(0)+'k',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}, x:{ticks:{autoSkip:true,maxTicksLimit:10,font:{size:11}},grid:{display:false}} } }
   });
 
-  function miniBarOpts() {
-    return { responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.raw>0?fmtBRL(ctx.raw):''}} },
-      scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:9}}, grid:{color:'rgba(0,0,0,0.04)'}}, x:{ticks:{autoSkip:false, maxRotation:0, font:{size:8}}, grid:{display:false}} }
-    };
+  function miniBarChart(canvasId, data, color, metaMensal, diasMes) {
+    const metaDiaria = metaMensal / 26;
+    return new Chart(document.getElementById(canvasId), {
+      type:'bar',
+      data:{ labels:diasLabels, datasets:[
+        { data:data, backgroundColor:data.map(v=>v>0?color:'rgba(0,0,0,0.06)'), borderRadius:3, borderSkipped:false, order:2 },
+        { type:'line', data:Array(diasMes).fill(Math.round(metaDiaria)), borderColor:'rgba(220,38,38,0.6)', borderDash:[4,3], borderWidth:1.5, pointRadius:0, fill:false, order:1 }
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===0&&ctx.raw>0?fmtBRL(ctx.raw):ctx.datasetIndex===1?'Meta: '+fmtBRL(ctx.raw):''}} },
+        scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:9}}, grid:{color:'rgba(0,0,0,0.04)'}}, x:{ticks:{autoSkip:false, maxRotation:0, font:{size:8}}, grid:{display:false}} }
+      }
+    });
   }
 
-  charts.cvs = new Chart(document.getElementById('cv-samuel'), {
-    type:'bar',
-    data:{ labels:diasLabels, datasets:[{data:vendorDaily.samuel, backgroundColor:vendorDaily.samuel.map(v=>v>0?'#2563eb':'rgba(0,0,0,0.06)'), borderRadius:3, borderSkipped:false}] },
-    options: miniBarOpts()
-  });
-
-  charts.cvm = new Chart(document.getElementById('cv-marina'), {
-    type:'bar',
-    data:{ labels:diasLabels, datasets:[{data:vendorDaily.marina, backgroundColor:vendorDaily.marina.map(v=>v>0?'#16a34a':'rgba(0,0,0,0.06)'), borderRadius:3, borderSkipped:false}] },
-    options: miniBarOpts()
-  });
-
-  charts.cvr = new Chart(document.getElementById('cv-maria'), {
-    type:'bar',
-    data:{ labels:diasLabels, datasets:[{data:vendorDaily.maria, backgroundColor:vendorDaily.maria.map(v=>v>0?'#7c3aed':'rgba(0,0,0,0.06)'), borderRadius:3, borderSkipped:false}] },
-    options: miniBarOpts()
-  });
+  charts.cvs = miniBarChart('cv-samuel', vendorDaily.samuel, '#2563eb', 220000, diasMes);
+  charts.cvm = miniBarChart('cv-marina', vendorDaily.marina, '#16a34a', 220000, diasMes);
+  charts.cvr = miniBarChart('cv-maria',  vendorDaily.maria,  '#7c3aed', 120000, diasMes);
 }
 
 async function loadData() {

@@ -202,7 +202,7 @@ function render(rows, mes) {
   destroyCharts();
   const diasMes = DIAS_MES[mes] || 30;
 
-  const jRow   = findRow(rows, 'jadilson') || [];
+  const jRow   = findRow(rows, 'bruno')    || [];
   const mRow   = findRow(rows, 'marina')   || [];
   const sRow   = findRow(rows, 'samuel')   || [];
   const marRow = findRow(rows, 'maria')    || [];
@@ -220,16 +220,16 @@ function render(rows, mes) {
   const pctT = pct(tR, tM);
 
   const vends = [
-    {nome:'Jadilson', real:jR, meta:jM},
-    {nome:'Marina',   real:mR, meta:mM},
-    {nome:'Samuel',   real:sR, meta:sM},
+    {nome:'Bruno',  real:jR, meta:jM},
+    {nome:'Marina', real:mR, meta:mM},
+    {nome:'Samuel', real:sR, meta:sM},
   ];
 
   const { map: convMap, total: totalConvTaxa } = parseConvData(rows);
   const convVends = [
-    { nome: 'Jadilson', ...(convMap['jadilson'] || {}) },
-    { nome: 'Marina',   ...(convMap['marina']   || {}) },
-    { nome: 'Samuel',   ...(convMap['samuel']   || {}) },
+    { nome: 'Bruno',  ...(convMap['bruno']  || {}) },
+    { nome: 'Marina', ...(convMap['marina'] || {}) },
+    { nome: 'Samuel', ...(convMap['samuel'] || {}) },
   ];
 
   const daily = parseDailyData(rows, diasMes);

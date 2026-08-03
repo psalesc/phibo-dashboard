@@ -176,22 +176,25 @@ function parseDailyData(rows, diasMes) {
 }
 
 function parseVendorDaily(rows, diasMes) {
-  // Dia 1 = linha 5 (índice 4), coluna Q=16, Y=24, AC=28
+  // Dia 1 = linha 5 (índice 4), coluna Q=16, U=20, Y=24, AC=28
   const samuel  = Array(diasMes).fill(0);
   const marina  = Array(diasMes).fill(0);
+  const bruno   = Array(diasMes).fill(0);
   const maria   = Array(diasMes).fill(0);
   for (let d = 0; d < diasMes; d++) {
-    const rowIdx = 4 + d; // linha 5 = índice 4
+    const rowIdx = 4 + d;
     if (rows[rowIdx]) {
       const s = rows[rowIdx][16]; // coluna Q
+      const u = rows[rowIdx][20]; // coluna U
       const m = rows[rowIdx][24]; // coluna Y
       const r = rows[rowIdx][28]; // coluna AC
       samuel[d] = typeof s === 'number' ? Math.max(0, s) : 0;
+      bruno[d]  = typeof u === 'number' ? Math.max(0, u) : 0;
       marina[d] = typeof m === 'number' ? Math.max(0, m) : 0;
       maria[d]  = typeof r === 'number' ? Math.max(0, r) : 0;
     }
   }
-  return { samuel, marina, maria };
+  return { samuel, marina, bruno, maria };
 }
 
 function render(rows, mes) {
@@ -371,12 +374,15 @@ function render(rows, mes) {
         <div style="position:relative;height:160px"><canvas id="cv-marina" role="img" aria-label="Vendas diárias Marina"></canvas></div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <div class="charts-row" style="margin-bottom:12px">
+      <div class="chart-card">
+        <div class="chart-title" style="font-size:12px;margin-bottom:8px">Bruno</div>
+        <div style="position:relative;height:160px"><canvas id="cv-bruno" role="img" aria-label="Vendas diárias Bruno"></canvas></div>
+      </div>
       <div class="chart-card">
         <div class="chart-title" style="font-size:12px;margin-bottom:8px">Maria (renovações)</div>
         <div style="position:relative;height:160px"><canvas id="cv-maria" role="img" aria-label="Vendas diárias Maria"></canvas></div>
       </div>
-      <div></div>
     </div>
 
     <div class="footer">Phibo · ao vivo · ${mes.toLowerCase()} · dia ${hoje}/${diasMes} · ${diasRest} dias restantes</div>
@@ -434,6 +440,14 @@ function render(rows, mes) {
 
   charts.cvs = miniBarChart('cv-samuel', vendorDaily.samuel, '#2563eb', 220000, diasMes);
   charts.cvm = miniBarChart('cv-marina', vendorDaily.marina, '#16a34a', 220000, diasMes);
+  charts.cvb = new Chart(document.getElementById('cv-bruno'), {
+    type:'bar',
+    data:{ labels:diasLabels, datasets:[{data:vendorDaily.bruno, backgroundColor:vendorDaily.bruno.map(v=>v>0?'#d97706':'rgba(0,0,0,0.06)'), borderRadius:3, borderSkipped:false}] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.raw>0?fmtBRL(ctx.raw):''}} },
+      scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:9}}, grid:{color:'rgba(0,0,0,0.04)'}}, x:{ticks:{autoSkip:false, maxRotation:0, font:{size:8}}, grid:{display:false}} }
+    }
+  });
   charts.cvr = miniBarChart('cv-maria',  vendorDaily.maria,  '#7c3aed', 120000, diasMes);
 }
 

@@ -202,7 +202,12 @@ function render(rows, mes) {
   destroyCharts();
   const diasMes = DIAS_MES[mes] || 30;
 
-  const jRow   = findRow(rows, 'bruno')    || [];
+  // Agosto em diante usa Bruno, meses anteriores usa Jadilson
+  const mesesComBruno = ['Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const nomeVendedor1 = mesesComBruno.includes(mes) ? 'Bruno' : 'Jadilson';
+  const chaveVendedor1 = nomeVendedor1.toLowerCase();
+
+  const jRow   = findRow(rows, chaveVendedor1) || [];
   const mRow   = findRow(rows, 'marina')   || [];
   const sRow   = findRow(rows, 'samuel')   || [];
   const marRow = findRow(rows, 'maria')    || [];
@@ -220,16 +225,16 @@ function render(rows, mes) {
   const pctT = pct(tR, tM);
 
   const vends = [
-    {nome:'Bruno',  real:jR, meta:jM},
-    {nome:'Marina', real:mR, meta:mM},
-    {nome:'Samuel', real:sR, meta:sM},
+    {nome: nomeVendedor1, real:jR, meta:jM},
+    {nome:'Marina',       real:mR, meta:mM},
+    {nome:'Samuel',       real:sR, meta:sM},
   ];
 
   const { map: convMap, total: totalConvTaxa } = parseConvData(rows);
   const convVends = [
-    { nome: 'Bruno',  ...(convMap['bruno']  || {}) },
-    { nome: 'Marina', ...(convMap['marina'] || {}) },
-    { nome: 'Samuel', ...(convMap['samuel'] || {}) },
+    { nome: nomeVendedor1, ...(convMap[chaveVendedor1] || {}) },
+    { nome: 'Marina',      ...(convMap['marina']       || {}) },
+    { nome: 'Samuel',      ...(convMap['samuel']       || {}) },
   ];
 
   const daily = parseDailyData(rows, diasMes);

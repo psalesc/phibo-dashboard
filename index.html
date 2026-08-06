@@ -217,7 +217,16 @@ function render(rows, mes) {
   const sR = brl(sRow[3]),  sM = brl(sRow[5]);
   const mrR = brl(marRow[1]), mrM = brl(marRow[3]);
 
-  const tR = jR+mR+sR, tM = jM+mM+sM;
+  const tR = jR+mR+sR;
+  const mesesComMetaTotal = ['Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let tM;
+  if (mesesComMetaTotal.includes(mes)) {
+    // F8 = linha 7 (índice 7), coluna F (índice 5)
+    const metaTotalRow = rows[7];
+    tM = metaTotalRow ? brl(metaTotalRow[5]) : jM+mM+sM;
+  } else {
+    tM = jM+mM+sM;
+  }
   const hoje = new Date().getDate();
   const diasRest = Math.max(1, diasMes - hoje);
   const mediaD = hoje > 0 ? tR/hoje : 0;

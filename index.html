@@ -221,9 +221,12 @@ function render(rows, mes) {
   const mesesComMetaTotal = ['Agosto','Setembro','Outubro','Novembro','Dezembro'];
   let tM;
   if (mesesComMetaTotal.includes(mes)) {
-    // F8 = linha 7 (índice 7), coluna F (índice 5)
-    const metaTotalRow = rows[7];
-    tM = metaTotalRow ? brl(metaTotalRow[5]) : jM+mM+sM;
+    // Busca a linha "Total" da seção Novos e pega a coluna F (índice 5)
+    const totalNovosRow = rows.find((r, idx) => 
+      idx > 3 && idx < 15 && String(r[0]).toLowerCase() === 'total' && brl(r[5]) > 0
+    );
+    const metaF8 = totalNovosRow ? brl(totalNovosRow[5]) : 0;
+    tM = metaF8 > 0 ? metaF8 : jM+mM+sM;
   } else {
     tM = jM+mM+sM;
   }

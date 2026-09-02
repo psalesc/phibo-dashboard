@@ -78,12 +78,13 @@
 <header>
   <div>
     <div class="logo">Phibo · Dashboard</div>
-    <h1 id="titulo">Controle de vendas — agosto</h1>
+    <h1 id="titulo">Controle de vendas — setembro</h1>
     <div class="meta-info" id="upd-info">Carregando...</div>
   </div>
   <div class="header-right">
     <div class="month-tabs">
-      <button class="month-tab active" onclick="trocarMes('Agosto')">Agosto</button>
+      <button class="month-tab active" onclick="trocarMes('Setembro')">Setembro</button>
+      <button class="month-tab" onclick="trocarMes('Agosto')">Agosto</button>
       <button class="month-tab" onclick="trocarMes('Julho')">Julho</button>
       <button class="month-tab" onclick="trocarMes('Junho')">Junho</button>
       <button class="month-tab" onclick="trocarMes('Maio')">Maio</button>
@@ -100,10 +101,10 @@
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbwWIi8mSUxdD3R0A9xMGxqnHLzYIzEZfbcdjwmz0ke1gSmnfGpPsAah4qjT2n1b1z9E/exec';
-const DIAS_MES = { 'Agosto': 31, 'Julho': 31, 'Junho': 30, 'Maio': 31 };
+const DIAS_MES = { 'Setembro': 30, 'Agosto': 31, 'Julho': 31, 'Junho': 30, 'Maio': 31 };
 const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed'];
 let charts = {};
-let mesSelecionado = 'Agosto';
+let mesSelecionado = 'Setembro';
 
 function brl(v) {
   if (v === null || v === undefined || v === '') return 0;

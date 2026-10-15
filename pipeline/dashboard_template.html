@@ -1,0 +1,1679 @@
+<meta charset="utf-8">
+<title>Painel de Vendas Phibo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --surface-page:   #f9f9f7;
+    --surface-card:   #fcfcfb;
+    --surface-sunken: #f1f0ec;
+    --ink-primary:    #193a66;
+    --ink-secondary:  #52514e;
+    --ink-muted:      #898781;
+    --border:         rgba(11,11,11,0.10);
+    --border-strong:  rgba(11,11,11,0.16);
+    --grid:           #e1e0d9;
+    --baseline:       #c3c2b7;
+    --accent:         #1c58a8;
+    --accent-ink:     #ffffff;
+    --accent-wash:    rgba(28,88,168,0.09);
+    --good:           #0ca30c;
+    --warning:        #b8790a;
+    --critical:       #d03b3b;
+    --v-samuel:       #2a78d6;
+    --v-marina:       #eb6834;
+    --v-bruno:        #1baf7a;
+    --v-maria:        #4a3aa7;
+    --v-total:        #34322d;
+    --weekend-band:   rgba(11,11,11,0.035);
+    --shadow-card: 0 1px 2px rgba(11,11,11,0.04), 0 1px 1px rgba(11,11,11,0.03);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-page:   #0d0d0d;
+      --surface-card:   #1a1a19;
+      --surface-sunken: #161615;
+      --ink-primary:    #ffffff;
+      --ink-secondary:  #c3c2b7;
+      --ink-muted:      #898781;
+      --border:         rgba(255,255,255,0.10);
+      --border-strong:  rgba(255,255,255,0.16);
+      --grid:           #2c2c2a;
+      --baseline:       #383835;
+      --accent:         #5b9ee6;
+      --accent-ink:     #0a1f38;
+      --accent-wash:    rgba(91,158,230,0.14);
+      --good:           #0ca30c;
+      --warning:        #d99a1f;
+      --critical:       #e66767;
+      --v-samuel:       #3987e5;
+      --v-marina:       #d95926;
+      --v-bruno:        #199e70;
+      --v-maria:        #9085e9;
+      --v-total:        #d8d6cc;
+      --weekend-band:   rgba(255,255,255,0.045);
+      --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.2);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface-page:   #0d0d0d;
+    --surface-card:   #1a1a19;
+    --surface-sunken: #161615;
+    --ink-primary:    #ffffff;
+    --ink-secondary:  #c3c2b7;
+    --ink-muted:      #898781;
+    --border:         rgba(255,255,255,0.10);
+    --border-strong:  rgba(255,255,255,0.16);
+    --grid:           #2c2c2a;
+    --baseline:       #383835;
+    --accent:         #5b9ee6;
+    --accent-ink:     #0a1f38;
+    --accent-wash:    rgba(91,158,230,0.14);
+    --good:           #0ca30c;
+    --warning:        #d99a1f;
+    --critical:       #e66767;
+    --v-samuel:       #3987e5;
+    --v-marina:       #d95926;
+    --v-bruno:        #199e70;
+    --v-maria:        #9085e9;
+    --v-total:        #d8d6cc;
+    --weekend-band:   rgba(255,255,255,0.045);
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.2);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--surface-page);
+    color: var(--ink-primary);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  h1, h2, h3, .display {
+    font-family: "Manrope", system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  a { color: var(--accent); }
+
+  /* ---------- layout shell ---------- */
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--surface-page) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 18px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .brand-logo {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+    flex: none;
+  }
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .brand .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .brand h1 { font-size: 21px; }
+  .freshness {
+    font-size: 12px;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .freshness .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--good);
+    flex: none;
+  }
+
+  /* segmented control (vendor filter) */
+  .segmented {
+    display: inline-flex;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .segmented button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--ink-secondary);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .segmented button .swatch {
+    width: 8px; height: 8px; border-radius: 50%; flex: none;
+  }
+  .segmented button:hover { color: var(--ink-primary); }
+  .segmented button[aria-pressed="true"] {
+    background: var(--surface-card);
+    color: var(--ink-primary);
+    box-shadow: var(--shadow-card);
+  }
+  .segmented button:focus-visible, .icon-btn:focus-visible, .th-sort:focus-visible, .search-input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .topbar-tabs {
+    border-top: 1px solid var(--border);
+  }
+  .topbar-tabs-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 10px 24px;
+  }
+
+  section { margin-top: 32px; }
+  .tab-page > section:first-child { margin-top: 24px; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .section-head h2 { font-size: 16px; }
+  .section-sub { font-size: 12.5px; color: var(--ink-muted); margin-top: 2px; font-family: "IBM Plex Sans"; font-weight: 400;}
+
+  .card {
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ---------- KPI tiles ---------- */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .kpi-tile {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .kpi-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .kpi-value {
+    font-family: "Manrope", sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+  }
+  .kpi-foot { font-size: 12px; color: var(--ink-secondary); display: flex; align-items: center; gap: 6px; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .pill.good { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }
+  .pill.warning { background: color-mix(in srgb, var(--warning) 16%, transparent); color: var(--warning); }
+  .pill.critical { background: color-mix(in srgb, var(--critical) 14%, transparent); color: var(--critical); }
+
+  /* ---------- charts row ---------- */
+  .charts-row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 16px;
+  }
+  @media (max-width: 860px) {
+    .charts-row { grid-template-columns: 1fr; }
+  }
+  .chart-card { padding: 18px 20px 14px; }
+  .chart-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .chart-title { font-family: "Manrope"; font-weight: 700; font-size: 13.5px; }
+  .chart-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .tiny-toggle {
+    display: inline-flex;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 2px;
+  }
+  .tiny-toggle button {
+    appearance: none; border: none; background: transparent;
+    font: inherit; font-size: 11.5px; font-weight: 600;
+    color: var(--ink-secondary);
+    padding: 4px 9px; border-radius: 5px; cursor: pointer;
+  }
+  .tiny-toggle button[aria-pressed="true"] {
+    background: var(--accent); color: var(--accent-ink);
+  }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 2px 0; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-secondary); }
+  .legend-swatch { width: 14px; height: 3px; border-radius: 2px; flex: none; }
+  .legend-swatch.dashed { background: repeating-linear-gradient(90deg, var(--v-total) 0 5px, transparent 5px 8px); }
+
+  svg text { font-family: "IBM Plex Sans", sans-serif; fill: var(--ink-muted); }
+  .axis-line { stroke: var(--baseline); stroke-width: 1; }
+  .grid-line { stroke: var(--grid); stroke-width: 1; }
+  .bar-realizado { fill: var(--accent); }
+  .bar-meta-fill { fill: var(--surface-sunken); stroke: var(--ink-muted); stroke-width: 1.5; }
+  .bar-label { font-size: 12px; fill: var(--ink-muted); }
+  .bar-value { font-size: 12.5px; font-weight: 600; fill: var(--ink-primary); font-family: "IBM Plex Sans"; }
+
+  .line-path { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .line-total { stroke: var(--v-total); stroke-dasharray: 5 4; opacity: 0.85; }
+  .line-samuel { stroke: var(--v-samuel); }
+  .line-marina { stroke: var(--v-marina); }
+  .line-bruno { stroke: var(--v-bruno); }
+  .line-dim { opacity: 0.18; }
+  .dot-hover { r: 3.5; }
+
+  .crosshair-line { stroke: var(--border-strong); stroke-width: 1; pointer-events: none; }
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--surface-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    box-shadow: var(--shadow-card);
+    min-width: 140px;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    z-index: 10;
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip-date { font-weight: 700; margin-bottom: 4px; color: var(--ink-primary); }
+  .tooltip-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 1px 0; }
+  .tooltip-row .k { display: flex; align-items: center; gap: 6px; color: var(--ink-secondary); }
+  .tooltip-row .sw { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .tooltip-row .v { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ---------- table ---------- */
+  .table-card { padding: 18px 20px 20px; }
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .search-wrap { position: relative; }
+  .search-input {
+    font: inherit;
+    font-size: 13px;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px 8px 30px;
+    color: var(--ink-primary);
+    width: 240px;
+  }
+  .search-input::placeholder { color: var(--ink-muted); }
+  .search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    width: 13px; height: 13px; color: var(--ink-muted); pointer-events: none;
+  }
+  .table-count { font-size: 12px; color: var(--ink-muted); }
+
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 760px; }
+  thead th {
+    position: sticky; top: 0;
+    background: var(--surface-sunken);
+    text-align: left;
+    padding: 9px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  th.num, td.num { text-align: right; }
+  .th-sort {
+    appearance: none; background: none; border: none; cursor: pointer;
+    font: inherit; font-size: inherit; font-weight: inherit; letter-spacing: inherit;
+    text-transform: inherit; color: inherit; padding: 0;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .th-sort .arrow { opacity: 0.3; font-size: 9px; }
+  .th-sort[data-active="true"] .arrow { opacity: 1; color: var(--accent); }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--accent-wash); }
+  td.num { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .vendor-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+  .vendor-tag .sw { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .cat-chip {
+    display: inline-block; font-size: 10.5px; font-weight: 600;
+    padding: 2px 7px; border-radius: 999px;
+    background: var(--surface-sunken); color: var(--ink-secondary);
+    white-space: nowrap;
+  }
+
+  .pagination {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 10px; margin-top: 12px; font-size: 12px; color: var(--ink-muted);
+  }
+  .icon-btn {
+    appearance: none; border: 1px solid var(--border); background: var(--surface-card);
+    width: 26px; height: 26px; border-radius: 6px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--ink-secondary);
+  }
+  .icon-btn:hover:not(:disabled) { color: var(--ink-primary); border-color: var(--border-strong); }
+  .icon-btn:disabled { opacity: 0.35; cursor: default; }
+
+  .btn-export {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--surface-card);
+    color: var(--ink-secondary);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .btn-export:hover:not(:disabled) { color: var(--ink-primary); border-color: var(--border-strong); }
+  .btn-export:disabled { opacity: 0.4; cursor: default; }
+  .btn-export svg { width: 13px; height: 13px; flex: none; }
+  .export-status {
+    font-size: 11.5px;
+    color: var(--ink-muted);
+  }
+  .export-status[data-tone="error"] { color: var(--critical, #c0392b); }
+  .export-status[data-tone="ok"] { color: var(--good, #2e8b57); }
+
+  .footnote {
+    margin-top: 28px;
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    line-height: 1.6;
+  }
+
+  .empty-state {
+    padding: 40px 20px; text-align: center; color: var(--ink-muted); font-size: 13px;
+  }
+
+  /* ---------- vendas diárias ativas + evolução acumulada ---------- */
+  .stat-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat-mini {
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-mini-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--ink-muted);
+  }
+  .stat-mini-value {
+    font-family: "Manrope", sans-serif; font-weight: 800; font-size: 19px;
+  }
+  .bar-daily { fill: var(--accent); }
+  .bar-daily.empty-day { fill: var(--grid); }
+  .weekend-band { fill: var(--weekend-band); }
+  .area-fill { opacity: 0.14; }
+  .line-meta-proj { stroke: var(--ink-muted); stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
+  .dot-endpoint { r: 3.5; stroke: var(--surface-card); stroke-width: 1.5; }
+
+  /* ---------- taxa de conversão ---------- */
+  .conv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .conv-card {
+    padding: 14px 16px 16px;
+    border-top: 3px solid var(--v-total);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .conv-name { font-family: "Manrope"; font-weight: 700; font-size: 13.5px; }
+  .conv-rate { font-family: "Manrope"; font-weight: 800; font-size: 24px; font-variant-numeric: tabular-nums; }
+  .conv-foot { font-size: 12px; color: var(--ink-secondary); }
+
+  /* ---------- vendas diárias por vendedor (small multiples) ---------- */
+  .mini-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 14px;
+  }
+  .mini-chart-card { padding: 14px 16px 10px; }
+  .mini-chart-title {
+    font-family: "Manrope"; font-weight: 700; font-size: 12.5px;
+    display: flex; align-items: center; gap: 6px; margin-bottom: 2px;
+  }
+  .mini-chart-title .sw { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .line-ref { stroke: var(--ink-muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+
+  /* ---------- vendas por plano (breakdown) ---------- */
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 14px;
+  }
+  .breakdown-card { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 4px; }
+  .breakdown-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .breakdown-title { font-family: "Manrope"; font-weight: 700; font-size: 13.5px; }
+  .breakdown-total { font-family: "Manrope"; font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .breakdown-total .unit { font-family: "IBM Plex Sans"; font-weight: 500; font-size: 11.5px; color: var(--ink-muted); margin-left: 4px; }
+  .breakdown-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+  .breakdown-label { flex: 0 0 168px; font-size: 12.5px; color: var(--ink-secondary); }
+  .breakdown-track { flex: 1; height: 8px; border-radius: 4px; background: var(--surface-sunken); overflow: hidden; }
+  .breakdown-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+  .breakdown-value { flex: 0 0 34px; text-align: right; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .breakdown-empty { font-size: 12.5px; color: var(--ink-muted); padding: 4px 0; }
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-logo" aria-hidden="true">&Phi;hibo</span>
+      <div class="brand-text">
+        <span class="eyebrow">Comercial</span>
+        <h1 id="dash-title">Painel de Vendas</h1>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+      <div class="freshness"><span class="dot" id="freshness-dot"></span><span id="freshness-text">—</span></div>
+      <div class="segmented" id="month-filter" role="group" aria-label="Selecionar mês"></div>
+      <div class="segmented" id="vendor-filter" role="group" aria-label="Filtrar por vendedor"></div>
+    </div>
+  </div>
+  <div class="topbar-tabs">
+    <div class="topbar-tabs-inner">
+      <div class="segmented" id="page-tabs" role="tablist" aria-label="Seções do painel">
+        <button data-tab="overview" aria-pressed="true">Visão geral</button>
+        <button data-tab="transacoes" aria-pressed="false">Transações</button>
+        <button data-tab="renovacoes" aria-pressed="false">Renovações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+<div id="tab-overview" class="tab-page">
+
+  <section style="margin-top:24px;">
+    <div class="kpi-grid" id="kpi-grid"></div>
+  </section>
+
+  <section>
+    <div class="card chart-card">
+      <div class="chart-card-head">
+        <div>
+          <div class="chart-title">Faturamento realizado vs. meta</div>
+          <div class="section-sub">Por vendedor, <span id="bar-month-label"></span> &middot; passe o mouse para ver os valores</div>
+        </div>
+      </div>
+      <div id="bar-chart" style="position:relative;"></div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--accent)"></span>Realizado</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--surface-sunken);border:1.5px solid var(--ink-muted)"></span>Meta</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card chart-card">
+      <div class="chart-card-head">
+        <div>
+          <div class="chart-title">Tendência diária</div>
+          <div class="section-sub" id="trend-sub">Categoria mensal &middot; valor em R$</div>
+        </div>
+        <div class="chart-controls">
+          <div class="tiny-toggle" id="cat-toggle">
+            <button data-cat="mensal" aria-pressed="true">Mensal</button>
+            <button data-cat="pacotes" aria-pressed="false">Pacotes</button>
+          </div>
+          <div class="tiny-toggle" id="metric-toggle">
+            <button data-metric="valor" aria-pressed="true">R$</button>
+            <button data-metric="qtd" aria-pressed="false">Qtde</button>
+          </div>
+        </div>
+      </div>
+      <div id="trend-chart" style="position:relative;"></div>
+      <div class="legend" id="trend-legend"></div>
+    </div>
+  </section>
+
+  <section id="cv-section" style="display:none;">
+    <div class="card chart-card">
+      <div class="chart-card-head">
+        <div>
+          <div class="chart-title">Receita diária &mdash; <span id="cv-month-label"></span></div>
+          <div class="section-sub">Apenas dias com venda registrada &middot; fonte: Controle Vendas</div>
+        </div>
+      </div>
+      <div class="stat-mini-grid" id="cv-stats"></div>
+      <div id="cv-daily-chart"></div>
+    </div>
+  </section>
+
+  <section id="cv-cumulative-section" style="display:none;">
+    <div class="card chart-card">
+      <div class="chart-card-head">
+        <div>
+          <div class="chart-title">Evolução acumulada</div>
+          <div class="section-sub">Acumulado real vs. projeção linear da meta</div>
+        </div>
+      </div>
+      <div id="cv-cumulative-chart"></div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--accent)"></span>Acumulado real</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:none;border-top:1.5px dashed var(--ink-muted)"></span>Projeção da meta</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cv-conversion-section" style="display:none;">
+    <div class="section-head">
+      <div>
+        <h2>Taxa de conversão</h2>
+        <div class="section-sub">Leads &rarr; vendas no mês &middot; ideal &ge; 25%</div>
+      </div>
+    </div>
+    <div class="conv-grid" id="cv-conversion-grid"></div>
+  </section>
+
+  <section id="cv-vendors-section" style="display:none;">
+    <div class="section-head">
+      <div>
+        <h2>Vendas diárias por vendedor</h2>
+        <div class="section-sub">Fonte: Controle Vendas &middot; linha tracejada = média do dia ativo de cada um</div>
+      </div>
+    </div>
+    <div class="mini-chart-grid" id="cv-vendors-grid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <h2>Vendas por plano</h2>
+        <div class="section-sub">Quantidade de fechamentos no mês, por tipo de plano &middot; fonte: Vendas Detalhadas</div>
+      </div>
+    </div>
+    <div class="breakdown-grid" id="plan-breakdown-grid"></div>
+  </section>
+
+</div>
+
+<div id="tab-transacoes" class="tab-page" style="display:none;">
+  <section>
+    <div class="card table-card">
+      <div class="section-head" style="margin-bottom:2px;">
+        <div>
+          <h2>Transações</h2>
+          <div class="section-sub">Vendas mensais e pacotes, transação a transação</div>
+        </div>
+      </div>
+      <div class="table-toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.4"/><path d="M11 11L14.2 14.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input class="search-input" id="search-input" type="text" placeholder="Buscar cliente, telefone, plano, observação…" />
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="export-status" id="export-status"></span>
+          <button class="btn-export" id="export-csv-btn" title="Baixar as transações filtradas em CSV">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M8 1.5v9M8 10.5L5 7.5M8 10.5l3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 12v1.5A1.5 1.5 0 0 0 4 15h8a1.5 1.5 0 0 0 1.5-1.5V12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            Exportar CSV
+          </button>
+          <div class="table-count" id="table-count"></div>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table id="tx-table">
+          <thead>
+            <tr>
+              <th data-key="vendedor"><button class="th-sort">Vendedor <span class="arrow">▾</span></button></th>
+              <th data-key="dataSort"><button class="th-sort">Data <span class="arrow">▾</span></button></th>
+              <th data-key="cliente"><button class="th-sort">Cliente <span class="arrow">▾</span></button></th>
+              <th data-key="telefone"><button class="th-sort">Telefone <span class="arrow">▾</span></button></th>
+              <th data-key="categoria"><button class="th-sort">Categoria <span class="arrow">▾</span></button></th>
+              <th data-key="plano"><button class="th-sort">Plano / Serviço <span class="arrow">▾</span></button></th>
+              <th class="num" data-key="valor"><button class="th-sort">Valor <span class="arrow">▾</span></button></th>
+              <th data-key="status"><button class="th-sort">Status <span class="arrow">▾</span></button></th>
+              <th data-key="observacao"><button class="th-sort">Observação <span class="arrow">▾</span></button></th>
+            </tr>
+          </thead>
+          <tbody id="tx-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </section>
+</div>
+
+<div id="tab-renovacoes" class="tab-page" style="display:none;">
+  <section id="ren-section" style="margin-top:24px;">
+    <div class="kpi-grid" id="ren-kpi-grid"></div>
+  </section>
+
+  <section>
+    <div class="card chart-card">
+      <div class="chart-card-head">
+        <div>
+          <div class="chart-title">Renovações &mdash; receita diária (Maria)</div>
+          <div class="section-sub">Apenas dias com venda registrada &middot; fonte: Controle Vendas</div>
+        </div>
+      </div>
+      <div class="stat-mini-grid" id="ren-stats"></div>
+      <div id="ren-daily-chart"></div>
+    </div>
+  </section>
+
+  <div class="footnote">Maria trabalha renovação/retenção, não vendas novas — por isso tem um modelo de meta e comissão diferente do restante do time e uma aba própria. Multiplicadores por tipo de fechamento (Renovação/Upgrade/Retido/Recuperado/Inadimplente) ainda não estão mapeados nesta versão.</div>
+</div>
+
+  <div class="footnote" id="footnote"></div>
+</div>
+
+<script>
+const MONTHS_BUNDLE = /*__DATA_JSON__*/;
+const MONTHS = MONTHS_BUNDLE.months;
+const MONTHS_ORDER = MONTHS_BUNDLE.order;
+let DATA = MONTHS[MONTHS_ORDER[0]];
+let CV = DATA.controleVendas;
+const CV_VENDOR_COLOR = { Samuel: 'var(--v-samuel)', Marina: 'var(--v-marina)', Bruno: 'var(--v-bruno)', Maria: 'var(--v-maria)' };
+
+const VENDOR_COLOR = { Samuel: 'var(--v-samuel)', Marina: 'var(--v-marina)', Bruno: 'var(--v-bruno)' };
+const VENDOR_COLOR_RAW = {}; // filled from computed style at runtime for SVG stroke (var() not always safe in some contexts, but modern browsers support var() in SVG attrs via style; we use style attr so it's fine)
+const fmtBRL = (n) => 'R$ ' + (n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const fmtBRLFull = (n) => 'R$ ' + (n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPct = (n) => (n * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+const fmtInt = (n) => (n || 0).toLocaleString('pt-BR');
+
+let state = { vendor: 'Todos', cat: 'mensal', metric: 'valor', search: '', sortKey: 'dataSort', sortDir: 'asc', page: 1, month: MONTHS_ORDER[0] };
+const PAGE_SIZE = 40;
+
+// ---------- restaura filtro/aba/mês a partir da URL (sobrevive ao auto-refresh) ----------
+let restoreTab = null;
+try {
+  const qp = new URLSearchParams(location.search);
+  const qMonth = qp.get('mes');
+  const qVendor = qp.get('vendedor');
+  const qCat = qp.get('cat');
+  const qMetric = qp.get('metrica');
+  const qTab = qp.get('aba');
+  if (qMonth && MONTHS_ORDER.includes(qMonth)) { state.month = qMonth; DATA = MONTHS[qMonth]; CV = DATA.controleVendas; }
+  if (qVendor && (qVendor === 'Todos' || DATA.vendors.includes(qVendor))) state.vendor = qVendor;
+  if (qCat === 'mensal' || qCat === 'pacotes') state.cat = qCat;
+  if (qMetric === 'valor' || qMetric === 'qtd') state.metric = qMetric;
+  if (qTab) restoreTab = qTab;
+} catch (e) { /* URL inacessível — segue com os padrões */ }
+
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  for (const k in (attrs || {})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c => {
+    if (c == null) return;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return e;
+}
+
+// ---------- freshness / título / mês ----------
+function refreshHeaderForMonth() {
+  document.getElementById('dash-title').textContent = 'Painel de Vendas — ' + DATA.mesAno;
+  document.getElementById('bar-month-label').textContent = DATA.mesAno.toLowerCase();
+  document.getElementById('freshness-text').textContent = DATA.updatedAt || 'Sem horário de atualização';
+}
+
+// ---------- month filter ----------
+function renderMonthFilter() {
+  const wrap = document.getElementById('month-filter');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  if (MONTHS_ORDER.length < 2) { wrap.style.display = 'none'; return; }
+  MONTHS_ORDER.forEach(m => {
+    const btn = el('button', {
+      'aria-pressed': String(state.month === m),
+      onclick: () => switchMonth(m)
+    }, m);
+    wrap.appendChild(btn);
+  });
+}
+
+function switchMonth(key) {
+  if (key === state.month || !MONTHS[key]) return;
+  state.month = key;
+  DATA = MONTHS[key];
+  CV = DATA.controleVendas;
+  if (state.vendor !== 'Todos' && !DATA.vendors.includes(state.vendor)) state.vendor = 'Todos';
+  state.page = 1;
+  refreshHeaderForMonth();
+  renderMonthFilter();
+  renderAll();
+}
+
+// ---------- vendor filter ----------
+function renderVendorFilter() {
+  const wrap = document.getElementById('vendor-filter');
+  wrap.innerHTML = '';
+  const opts = [{ id: 'Todos', color: null }].concat(DATA.vendors.map(v => ({ id: v, color: VENDOR_COLOR[v] })));
+  opts.forEach(o => {
+    const btn = el('button', {
+      'aria-pressed': String(state.vendor === o.id),
+      onclick: () => { state.vendor = o.id; state.page = 1; renderAll(); }
+    }, o.color ? el('span', { class: 'swatch', style: `background:${o.color}` }) : null, o.id);
+    wrap.appendChild(btn);
+  });
+}
+
+// ---------- KPI tiles ----------
+function currentKpi() {
+  if (state.vendor === 'Todos') return DATA.total;
+  return DATA.kpis[state.vendor];
+}
+function renderKpis() {
+  const k = currentKpi();
+  const grid = document.getElementById('kpi-grid');
+  grid.innerHTML = '';
+  const pctClass = k.pctMeta >= 1 ? 'good' : (k.pctMeta >= 0.85 ? 'warning' : 'critical');
+  const faltamR = Math.max((k.metaR || 0) - (k.faturamentoR || 0), 0);
+  const tiles = [
+    { label: 'Faturamento total', value: fmtBRL(k.faturamentoR), foot: state.vendor === 'Todos' ? `${DATA.vendors.length} vendedores` : 'no mês' },
+    { label: '% da meta', value: fmtPct(k.pctMeta || 0), pill: { cls: pctClass, text: k.pctMeta >= 1 ? 'na meta' : 'abaixo' } },
+    { label: 'Meta', value: fmtBRL(k.metaR || 0), foot: state.vendor === 'Todos' ? 'meta do time' : 'meta do mês' },
+    { label: 'Faltam', value: fmtBRL(faltamR), foot: (k.pctMeta || 0) >= 1 ? 'meta batida' : 'pra bater a meta' },
+    { label: 'Fechamentos', value: fmtInt(k.fechamentosQtd), foot: 'vendas no mês' },
+    { label: 'Ticket médio', value: fmtBRL(k.ticketMedio), foot: 'por fechamento' },
+  ];
+  tiles.forEach(t => {
+    grid.appendChild(el('div', { class: 'card kpi-tile' },
+      el('div', { class: 'kpi-label' }, t.label),
+      el('div', { class: 'kpi-value tabular' }, t.value),
+      el('div', { class: 'kpi-foot' },
+        t.pill ? el('span', { class: 'pill ' + t.pill.cls }, t.pill.text) : null,
+        t.foot ? el('span', {}, t.foot) : null
+      )
+    ));
+  });
+}
+
+// ---------- bar chart: faturamento vs meta ----------
+function renderBarChart() {
+  const host = document.getElementById('bar-chart');
+  const vendors = DATA.vendors;
+  const W = 1180, H = 260, padL = 54, padR = 16, padT = 14, padB = 30;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const maxVal = Math.max(...vendors.map(v => Math.max(DATA.kpis[v].faturamentoR, DATA.kpis[v].metaR || 0)), 1) * 1.12;
+  const groupW = innerW / vendors.length;
+  const barW = Math.min(64, groupW * 0.22);
+  const gap = 6;
+
+  const yTicks = 4;
+  let gridSvg = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const y = padT + innerH - (innerH * i / yTicks);
+    const val = maxVal * i / yTicks;
+    gridSvg += `<line class="grid-line" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"/>`;
+    gridSvg += `<text x="${padL - 8}" y="${y + 3}" text-anchor="end" font-size="11">${val >= 1000 ? Math.round(val/1000) + 'k' : Math.round(val)}</text>`;
+  }
+
+  let bars = '';
+  const groups = [];
+  vendors.forEach((v, i) => {
+    const cx = padL + groupW * i + groupW / 2;
+    const k = DATA.kpis[v];
+    const dim = state.vendor !== 'Todos' && state.vendor !== v;
+    const rH = (k.faturamentoR / maxVal) * innerH;
+    const rY = padT + innerH - rH;
+    const mH = ((k.metaR || 0) / maxVal) * innerH;
+    const mY = padT + innerH - mH;
+    const rx = cx - gap / 2 - barW;
+    const mx = cx + gap / 2;
+    bars += `<g opacity="${dim ? 0.28 : 1}">
+      <rect class="bar-realizado" x="${rx.toFixed(1)}" y="${rY.toFixed(1)}" width="${barW.toFixed(1)}" height="${rH.toFixed(1)}" rx="3"/>
+      <rect class="bar-meta-fill" x="${mx.toFixed(1)}" y="${mY.toFixed(1)}" width="${barW.toFixed(1)}" height="${mH.toFixed(1)}" rx="3"/>
+      <text class="bar-value tabular" x="${cx}" y="${(Math.min(rY, mY) - 8).toFixed(1)}" text-anchor="middle">${fmtBRL(k.faturamentoR)}</text>
+      <text class="bar-label" x="${cx}" y="${H - 10}" text-anchor="middle" font-weight="${dim ? 400 : 600}" fill="${dim ? 'var(--ink-muted)' : 'var(--ink-primary)'}">${v}</text>
+    </g>`;
+    groups.push({ v, cx, k });
+  });
+
+  host.innerHTML = `<svg id="bar-svg" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Faturamento realizado vs meta por vendedor">
+    ${gridSvg}
+    <line class="axis-line" x1="${padL}" x2="${W - padR}" y1="${padT + innerH}" y2="${padT + innerH}"/>
+    ${bars}
+    <g id="bar-hit-areas"></g>
+  </svg>
+  <div class="tooltip" id="bar-tooltip"></div>`;
+
+  const svg = document.getElementById('bar-svg');
+  const hitLayer = document.getElementById('bar-hit-areas');
+  const tooltip = document.getElementById('bar-tooltip');
+  hitLayer.innerHTML = groups.map(g =>
+    `<rect data-v="${g.v}" x="${(g.cx - groupW/2).toFixed(1)}" y="${padT}" width="${groupW.toFixed(1)}" height="${innerH}" fill="transparent"/>`
+  ).join('');
+
+  hitLayer.querySelectorAll('rect').forEach(rect => {
+    rect.addEventListener('mousemove', (ev) => {
+      const v = rect.dataset.v;
+      const k = DATA.kpis[v];
+      tooltip.innerHTML = `<div class="tooltip-date">${v}</div>
+        <div class="tooltip-row"><span class="k"><span class="sw" style="background:var(--accent)"></span>Realizado</span><span class="v">${fmtBRLFull(k.faturamentoR)}</span></div>
+        <div class="tooltip-row"><span class="k"><span class="sw" style="background:var(--ink-muted)"></span>Meta</span><span class="v">${k.metaR != null ? fmtBRLFull(k.metaR) : '—'}</span></div>
+        <div class="tooltip-row"><span class="k">% da meta</span><span class="v">${k.pctMeta != null ? fmtPct(k.pctMeta) : '—'}</span></div>`;
+      tooltip.classList.add('visible');
+      const hostRect = host.getBoundingClientRect();
+      let left = (ev.clientX - hostRect.left) + 14;
+      if (left + 170 > hostRect.width) left = (ev.clientX - hostRect.left) - 184;
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = '4px';
+    });
+    rect.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+  });
+}
+
+// ---------- trend line chart ----------
+function renderTrendLegend() {
+  const legend = document.getElementById('trend-legend');
+  legend.innerHTML = '';
+  legend.appendChild(el('div', { class: 'legend-item' }, el('span', { class: 'legend-swatch dashed' }), 'Total'));
+  DATA.vendors.forEach(v => {
+    legend.appendChild(el('div', { class: 'legend-item' },
+      el('span', { class: 'legend-swatch', style: `background:${VENDOR_COLOR[v]}` }), v));
+  });
+}
+
+function renderTrendChart() {
+  document.getElementById('trend-sub').textContent =
+    (state.cat === 'mensal' ? 'Categoria mensal' : 'Categoria pacotes') + ' · ' +
+    (state.metric === 'valor' ? 'valor em R$' : 'quantidade de vendas');
+
+  const series = DATA.daily[state.cat];
+  const totalsKey = state.metric === 'valor' ? 'totals' : 'qtdTotals';
+  const byVendorKey = state.metric === 'valor' ? 'byVendor' : 'qtdByVendor';
+  const numDays = series.totals.length;
+
+  const host = document.getElementById('trend-chart');
+  const W = 1180, H = 340, padL = 50, padR = 16, padT = 14, padB = 28;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+
+  const allVals = [series[totalsKey]].concat(DATA.vendors.map(v => series[byVendorKey][v])).flat();
+  const maxVal = Math.max(...allVals, 1) * 1.15;
+  const x = (d) => padL + (innerW * (d) / (numDays - 1));
+  const y = (v) => padT + innerH - (v / maxVal) * innerH;
+
+  function pathFor(arr) {
+    return arr.map((v, i) => (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  }
+
+  const yTicks = 4;
+  let gridSvg = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const yy = padT + innerH - (innerH * i / yTicks);
+    const val = maxVal * i / yTicks;
+    gridSvg += `<line class="grid-line" x1="${padL}" x2="${W - padR}" y1="${yy}" y2="${yy}"/>`;
+    const label = state.metric === 'valor' ? (val >= 1000 ? Math.round(val/1000) + 'k' : Math.round(val)) : Math.round(val);
+    gridSvg += `<text x="${padL - 8}" y="${yy + 3}" text-anchor="end" font-size="9.5">${label}</text>`;
+  }
+  let xTicks = '';
+  [1, 5, 10, 15, 20, 25, numDays].forEach(d => {
+    if (d > numDays) return;
+    xTicks += `<text x="${x(d-1)}" y="${H - 6}" text-anchor="middle" font-size="9.5">${d}</text>`;
+  });
+
+  const lines = [
+    { key: 'total', cls: 'line-total', d: pathFor(series[totalsKey]) },
+  ].concat(DATA.vendors.map(v => ({ key: v, cls: 'line-' + v.toLowerCase(), d: pathFor(series[byVendorKey][v]) })));
+
+  let lineSvg = '';
+  lines.forEach(l => {
+    const dim = state.vendor !== 'Todos' && l.key !== 'total' && l.key !== state.vendor;
+    lineSvg += `<path class="line-path ${l.cls} ${dim ? 'line-dim' : ''}" d="${l.d}"/>`;
+  });
+
+  host.innerHTML = `<svg id="trend-svg" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Vendas por dia">
+    ${gridSvg}
+    <line class="axis-line" x1="${padL}" x2="${W - padR}" y1="${padT + innerH}" y2="${padT + innerH}"/>
+    ${lineSvg}
+    ${xTicks}
+    <line class="crosshair-line" id="crosshair" x1="0" x2="0" y1="${padT}" y2="${padT + innerH}" style="display:none"/>
+    <g id="hover-dots"></g>
+    <rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="transparent" id="hover-target"/>
+  </svg>
+  <div class="tooltip" id="trend-tooltip"></div>`;
+
+  const svg = document.getElementById('trend-svg');
+  const hoverTarget = document.getElementById('hover-target');
+  const crosshair = document.getElementById('crosshair');
+  const tooltip = document.getElementById('trend-tooltip');
+  const hoverDots = document.getElementById('hover-dots');
+
+  hoverTarget.addEventListener('mousemove', (ev) => {
+    const rect = svg.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    const svgX = (ev.clientX - rect.left) * scaleX;
+    const dayIdx = Math.round(((svgX - padL) / innerW) * (numDays - 1));
+    const clamped = Math.max(0, Math.min(numDays - 1, dayIdx));
+    const cx = x(clamped);
+    crosshair.setAttribute('x1', cx); crosshair.setAttribute('x2', cx);
+    crosshair.style.display = 'block';
+
+    hoverDots.innerHTML = lines.map(l => {
+      const val = l.key === 'total' ? series[totalsKey][clamped] : series[byVendorKey][l.key][clamped];
+      const dim = state.vendor !== 'Todos' && l.key !== 'total' && l.key !== state.vendor;
+      const colorVar = l.key === 'total' ? 'var(--v-total)' : VENDOR_COLOR[l.key];
+      return `<circle class="dot-hover" cx="${cx}" cy="${y(val)}" fill="${colorVar}" stroke="var(--surface-card)" stroke-width="1.5" opacity="${dim ? 0.25 : 1}"/>`;
+    }).join('');
+
+    const rows = lines.map(l => {
+      const val = l.key === 'total' ? series[totalsKey][clamped] : series[byVendorKey][l.key][clamped];
+      const colorVar = l.key === 'total' ? 'var(--v-total)' : VENDOR_COLOR[l.key];
+      const label = l.key === 'total' ? 'Total' : l.key;
+      const valStr = state.metric === 'valor' ? fmtBRLFull(val) : fmtInt(val);
+      return `<div class="tooltip-row"><span class="k"><span class="sw" style="background:${colorVar}"></span>${label}</span><span class="v">${valStr}</span></div>`;
+    }).join('');
+    tooltip.innerHTML = `<div class="tooltip-date">Dia ${clamped + 1}/${DATA.mesNumPadded}</div>${rows}`;
+    tooltip.classList.add('visible');
+
+    const hostRect = host.getBoundingClientRect();
+    let left = (ev.clientX - hostRect.left) + 14;
+    if (left + 160 > hostRect.width) left = (ev.clientX - hostRect.left) - 174;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = '4px';
+  });
+  hoverTarget.addEventListener('mouseleave', () => {
+    crosshair.style.display = 'none';
+    hoverDots.innerHTML = '';
+    tooltip.classList.remove('visible');
+  });
+}
+
+document.getElementById('cat-toggle').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button'); if (!btn) return;
+  state.cat = btn.dataset.cat;
+  [...ev.currentTarget.children].forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  renderTrendChart();
+});
+document.getElementById('metric-toggle').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button'); if (!btn) return;
+  state.metric = btn.dataset.metric;
+  [...ev.currentTarget.children].forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  renderTrendChart();
+});
+
+// ---------- transactions table ----------
+DATA.records.forEach(r => {
+  const parts = (r.data || '').split('/');
+  r.dataSort = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : '';
+});
+
+function filteredRecords() {
+  let rows = DATA.records;
+  if (state.vendor !== 'Todos') rows = rows.filter(r => r.vendedor === state.vendor);
+  if (state.search.trim()) {
+    const q = state.search.trim().toLowerCase();
+    rows = rows.filter(r =>
+      (r.cliente || '').toLowerCase().includes(q) ||
+      (r.telefone || '').toLowerCase().includes(q) ||
+      (r.plano || '').toLowerCase().includes(q) ||
+      (r.observacao || '').toLowerCase().includes(q) ||
+      (r.status || '').toLowerCase().includes(q)
+    );
+  }
+  const dir = state.sortDir === 'asc' ? 1 : -1;
+  rows = [...rows].sort((a, b) => {
+    let av = a[state.sortKey], bv = b[state.sortKey];
+    if (state.sortKey === 'valor') { av = av || 0; bv = bv || 0; return (av - bv) * dir; }
+    av = (av || '').toString().toLowerCase(); bv = (bv || '').toString().toLowerCase();
+    if (av < bv) return -1 * dir; if (av > bv) return 1 * dir; return 0;
+  });
+  return rows;
+}
+
+// ---------- vendas por plano (breakdown) ----------
+// Mensal não traz o nome do plano na aba "Vendas Detalhadas" — só o valor
+// cobrado. Os 3 valores fixos observados mapeiam pros 3 planos mensais
+// (confirmado pelo Pedro: R$89=Bronze, R$149=Prata, R$239=Ouro). Qualquer
+// valor fora desses 3 (ou em branco) cai em "Outros", pra nunca sumir
+// silenciosamente uma venda da contagem.
+function classifyMensal(valor) {
+  if (valor === 89) return 'Bronze';
+  if (valor === 149) return 'Prata';
+  if (valor === 239) return 'Ouro';
+  return 'Outros';
+}
+
+// Anual/Pacote traz o nome do plano em texto livre, com variações de
+// grafia/espaço. Classificado por palavras-chave (não por igualdade exata)
+// pra resistir a pequenas variações — qualquer nome que não bata com nenhuma
+// regra cai em "Outros".
+function classifyAnual(planoRaw) {
+  const plano = (planoRaw || '').trim();
+  const lower = plano.toLowerCase();
+  if (!lower) return 'Outros';
+  if (lower.startsWith('migração') || lower.startsWith('migracao')) return 'Migração';
+  const hasPhibozap = lower.includes('phibozap');
+  const hasPrata = lower.includes('prata');
+  const hasOuro = lower.includes('ouro');
+  if (hasPhibozap && (hasPrata || hasOuro)) return 'Combos Anual + Phibozap';
+  if (hasPrata) return 'Prata';
+  if (hasOuro) return 'Ouro';
+  if (hasPhibozap && lower.includes('mensal')) return 'Phibozap Mensal';
+  if (hasPhibozap) return 'Pacotes Phibozap';
+  return 'Outros';
+}
+
+function planBreakdownRecords() {
+  return state.vendor === 'Todos' ? DATA.records : DATA.records.filter(r => r.vendedor === state.vendor);
+}
+
+function renderBreakdownCard(host, title, total, items) {
+  const maxVal = Math.max(...items.map(i => i.value), 1);
+  const rows = items.filter(i => i.value > 0).map(i =>
+    el('div', { class: 'breakdown-row' },
+      el('div', { class: 'breakdown-label' }, i.label),
+      el('div', { class: 'breakdown-track' }, el('div', { class: 'breakdown-fill', style: `width:${(i.value / maxVal * 100).toFixed(1)}%` })),
+      el('div', { class: 'breakdown-value tabular' }, fmtInt(i.value))
+    )
+  );
+  host.appendChild(el('div', { class: 'card breakdown-card' },
+    el('div', { class: 'breakdown-head' },
+      el('div', { class: 'breakdown-title' }, title),
+      el('div', { class: 'breakdown-total' }, fmtInt(total), el('span', { class: 'unit' }, 'vendas'))
+    ),
+    rows.length ? el('div', {}, ...rows) : el('div', { class: 'breakdown-empty' }, 'Nenhuma venda no mês.')
+  ));
+}
+
+function renderPlanBreakdown() {
+  const grid = document.getElementById('plan-breakdown-grid');
+  grid.innerHTML = '';
+  const rows = planBreakdownRecords();
+
+  // "Outros" (vendas mensais sem valor reconhecido) fica de fora por pedido
+  // do Pedro — não entra na contagem nem aparece como linha.
+  const mensalRows = rows.filter(r => r.categoria === 'Mensal');
+  const mensalCounts = { Ouro: 0, Prata: 0, Bronze: 0 };
+  mensalRows.forEach(r => {
+    const bucket = classifyMensal(r.valor);
+    if (bucket !== 'Outros') mensalCounts[bucket]++;
+  });
+  const mensalTotal = mensalCounts.Ouro + mensalCounts.Prata + mensalCounts.Bronze;
+  renderBreakdownCard(grid, 'Mensal', mensalTotal, [
+    { label: 'Ouro', value: mensalCounts.Ouro },
+    { label: 'Prata', value: mensalCounts.Prata },
+    { label: 'Bronze', value: mensalCounts.Bronze },
+  ]);
+
+  const anualRows = rows.filter(r => r.categoria === 'Anual/Pacote');
+  const anualCounts = { 'Pacotes Phibozap': 0, 'Phibozap Mensal': 0, 'Combos Anual + Phibozap': 0, 'Migração': 0, Prata: 0, Ouro: 0, Outros: 0 };
+  anualRows.forEach(r => { anualCounts[classifyAnual(r.plano)]++; });
+  renderBreakdownCard(grid, 'Anual / Pacote', anualRows.length, [
+    { label: 'Pacotes Phibozap', value: anualCounts['Pacotes Phibozap'] },
+    { label: 'Phibozap Mensal', value: anualCounts['Phibozap Mensal'] },
+    { label: 'Combos Anual + Phibozap', value: anualCounts['Combos Anual + Phibozap'] },
+    { label: 'Migração', value: anualCounts['Migração'] },
+    { label: 'Prata', value: anualCounts.Prata },
+    { label: 'Ouro', value: anualCounts.Ouro },
+    { label: 'Outros', value: anualCounts.Outros },
+  ]);
+}
+
+function renderTable() {
+  const rows = filteredRecords();
+  document.getElementById('table-count').textContent = `${rows.length.toLocaleString('pt-BR')} transações`;
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  state.page = Math.min(state.page, totalPages);
+  const start = (state.page - 1) * PAGE_SIZE;
+  const pageRows = rows.slice(start, start + PAGE_SIZE);
+
+  const tbody = document.getElementById('tx-tbody');
+  if (pageRows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">Nenhuma transação encontrada para esse filtro.</div></td></tr>`;
+  } else {
+    tbody.innerHTML = pageRows.map(r => `
+      <tr>
+        <td><span class="vendor-tag"><span class="sw" style="background:${VENDOR_COLOR[r.vendedor] || 'var(--ink-muted)'}"></span>${r.vendedor}</span></td>
+        <td class="tabular">${r.data || '—'}</td>
+        <td>${escapeHtml(r.cliente || '—')}</td>
+        <td class="tabular">${escapeHtml(r.telefone || '—')}</td>
+        <td><span class="cat-chip">${r.categoria}</span></td>
+        <td>${escapeHtml(r.plano || '—')}</td>
+        <td class="num">${r.valor != null ? fmtBRLFull(r.valor) : '—'}</td>
+        <td>${escapeHtml(r.status || '—')}</td>
+        <td>${escapeHtml(r.observacao || '—')}</td>
+      </tr>`).join('');
+  }
+
+  document.querySelectorAll('.th-sort').forEach(btn => {
+    const key = btn.parentElement.dataset.key;
+    btn.dataset.active = String(key === state.sortKey);
+    btn.querySelector('.arrow').textContent = key === state.sortKey ? (state.sortDir === 'asc' ? '▴' : '▾') : '▾';
+  });
+
+  const pag = document.getElementById('pagination');
+  pag.innerHTML = '';
+  pag.appendChild(el('span', {}, `Página ${state.page} de ${totalPages}`));
+  pag.appendChild(el('button', { class: 'icon-btn', disabled: state.page <= 1 ? true : null, onclick: () => { state.page--; renderTable(); } }, '‹'));
+  pag.appendChild(el('button', { class: 'icon-btn', disabled: state.page >= totalPages ? true : null, onclick: () => { state.page++; renderTable(); } }, '›'));
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+document.querySelectorAll('.th-sort').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.parentElement.dataset.key;
+    if (state.sortKey === key) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+    else { state.sortKey = key; state.sortDir = 'asc'; }
+    state.page = 1;
+    renderTable();
+  });
+});
+document.getElementById('search-input').addEventListener('input', (ev) => {
+  state.search = ev.target.value; state.page = 1; renderTable();
+});
+
+// ---------- exportar transações (CSV, via capacidade "downloads") ----------
+let downloadsCap = null;
+(async function initDownloadsCapability() {
+  const btn = document.getElementById('export-csv-btn');
+  try {
+    if (window.claude && typeof window.claude.use === 'function') {
+      downloadsCap = await window.claude.use('downloads');
+    }
+  } catch (e) { downloadsCap = null; }
+  if (!downloadsCap) btn.style.display = 'none'; // sem a capacidade nesta visualização — esconde o botão
+})();
+
+function csvField(v) {
+  const s = (v === null || v === undefined) ? '' : String(v);
+  if (/[;"\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function csvNumber(n) {
+  if (n === null || n === undefined) return '';
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function slugify(s) {
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+function setExportStatus(text, tone) {
+  const el = document.getElementById('export-status');
+  el.textContent = text || '';
+  if (tone) el.setAttribute('data-tone', tone); else el.removeAttribute('data-tone');
+}
+
+document.getElementById('export-csv-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('export-csv-btn');
+  if (!downloadsCap) { setExportStatus('Exportação indisponível nesta visualização.', 'error'); return; }
+
+  const rows = filteredRecords();
+  const headers = ['Vendedor', 'Data', 'Cliente', 'Telefone', 'Categoria', 'Plano/Serviço', 'Valor (R$)', 'Status', 'Observação'];
+  const lines = [headers.join(';')];
+  rows.forEach(r => {
+    lines.push([
+      csvField(r.vendedor), csvField(r.data), csvField(r.cliente), csvField(r.telefone),
+      csvField(r.categoria), csvField(r.plano), csvNumber(r.valor), csvField(r.status), csvField(r.observacao),
+    ].join(';'));
+  });
+  const csv = '﻿' + lines.join('\r\n'); // BOM na frente ajuda o Excel a ler os acentos certo
+
+  const vendorPart = state.vendor && state.vendor !== 'Todos' ? `_${slugify(state.vendor)}` : '';
+  const filename = `transacoes_${slugify(DATA.mesAno)}${vendorPart}.csv`;
+
+  btn.disabled = true;
+  setExportStatus('Aguardando confirmação…');
+  try {
+    await downloadsCap.save({ filename, data: csv });
+    setExportStatus(`${rows.length.toLocaleString('pt-BR')} transações exportadas.`, 'ok');
+  } catch (err) {
+    const code = err && err.code;
+    if (code === 'declined') {
+      setExportStatus('Exportação cancelada.');
+    } else if (code === 'extension_not_enabled' || code === 'rejected_extension') {
+      setExportStatus('Formato CSV indisponível nesta visualização.', 'error');
+    } else if (code === 'rate_limited') {
+      setExportStatus('Já há uma exportação em andamento — tente de novo em instantes.', 'error');
+    } else {
+      setExportStatus('Não foi possível exportar agora.', 'error');
+    }
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---------- footnote ----------
+function renderFootnote() {
+  let txt = 'Vendas mensais somam ×4 sobre o valor da transação (lógica comercial da Phibo para planos mensais) — por isso o total do painel não bate com a soma bruta da tabela de transações abaixo, que mostra o valor real por venda. Maria (renovação/retenção) fica fora do resumo principal, mas aparece nas seções de vendas diárias. Dados atualizados automaticamente a partir da planilha "Dashboard de Vendas — Phibo (ao vivo)".';
+  if (CV) {
+    txt += ` As seções de receita diária, evolução acumulada, taxa de conversão e vendas por vendedor usam a planilha "Controle Vendas" (aba ${CV.monthTab}) como fonte.`;
+    if (CV.anomalyDays && CV.anomalyDays.length) {
+      txt += ` Nos dias ${CV.anomalyDays.join(', ')} a planilha de origem trouxe um valor inconsistente (provável erro de fórmula na virada do dia) — foi tratado como zero nos gráficos.`;
+    }
+  }
+  document.getElementById('footnote').innerHTML = txt;
+}
+
+// ---------- Controle Vendas: receita diária ativa, evolução acumulada,
+// taxa de conversão, vendas diárias por vendedor ----------
+function renderCvStats() {
+  const grid = document.getElementById('cv-stats');
+  grid.innerHTML = '';
+  const tiles = [
+    { label: 'Melhor dia', value: fmtBRL(CV.stats.melhorDia) },
+    { label: 'Média dia ativo', value: fmtBRL(CV.stats.mediaDiaAtivo) },
+    { label: 'Dias com venda', value: `${CV.stats.diasComVenda} / ${CV.stats.diasElapsed}`, foot: 'dias decorridos no mês' },
+  ];
+  tiles.forEach(t => {
+    grid.appendChild(el('div', { class: 'stat-mini' },
+      el('div', { class: 'stat-mini-label' }, t.label),
+      el('div', { class: 'stat-mini-value tabular' }, t.value),
+      t.foot ? el('div', { class: 'kpi-foot' }, t.foot) : null
+    ));
+  });
+}
+
+function svgDailyBars(host, series, colorVar, opts) {
+  opts = opts || {};
+  const W = opts.W || 620, H = opts.H || 190, padL = 42, padR = 10, padT = 10, padB = 22;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const numDays = series.length;
+  const maxVal = Math.max(...series, 1) * 1.15;
+  const bw = Math.max(2, (innerW / numDays) * 0.62);
+  const x = (i) => padL + (innerW * i / numDays) + (innerW / numDays - bw) / 2;
+  const y = (v) => padT + innerH - (v / maxVal) * innerH;
+
+  const yTicks = 4;
+  let gridSvg = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const yy = padT + innerH - (innerH * i / yTicks);
+    const val = maxVal * i / yTicks;
+    gridSvg += `<line class="grid-line" x1="${padL}" x2="${W - padR}" y1="${yy}" y2="${yy}"/>`;
+    gridSvg += `<text x="${padL - 8}" y="${yy + 3}" text-anchor="end" font-size="${opts.fontSize || 9.5}">${val >= 1000 ? Math.round(val/1000) + 'k' : Math.round(val)}</text>`;
+  }
+  let xTicks = '';
+  [1, 5, 10, 15, 20, 25, numDays].forEach(d => {
+    if (d > numDays) return;
+    xTicks += `<text x="${x(d-1) + bw/2}" y="${H - 5}" text-anchor="middle" font-size="${opts.fontSize || 9.5}">${d}</text>`;
+  });
+
+  let bars = '';
+  series.forEach((v, i) => {
+    if (!v || v <= 0) return;
+    const h = (v / maxVal) * innerH;
+    bars += `<rect class="bar-daily" data-day="${i}" x="${x(i).toFixed(1)}" y="${(padT + innerH - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" style="fill:${colorVar}"/>`;
+  });
+
+  host.style.position = 'relative';
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Vendas diárias">
+    ${gridSvg}
+    <line class="axis-line" x1="${padL}" x2="${W - padR}" y1="${padT + innerH}" y2="${padT + innerH}"/>
+    ${bars}
+    ${xTicks}
+    <rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="transparent" class="daily-hit-target"/>
+  </svg>
+  <div class="tooltip daily-tooltip"></div>`;
+
+  const svg = host.querySelector('svg');
+  const hitTarget = host.querySelector('.daily-hit-target');
+  const tooltip = host.querySelector('.daily-tooltip');
+  if (!hitTarget || !tooltip) return;
+
+  hitTarget.addEventListener('mousemove', (ev) => {
+    const rect = svg.getBoundingClientRect();
+    const scaleX = W / rect.width;
+    const svgX = (ev.clientX - rect.left) * scaleX;
+    const dayIdx = Math.floor(((svgX - padL) / innerW) * numDays);
+    const clamped = Math.max(0, Math.min(numDays - 1, dayIdx));
+    const val = series[clamped] || 0;
+    tooltip.innerHTML = `<div class="tooltip-date">Dia ${clamped + 1}</div>
+      <div class="tooltip-row"><span class="k"><span class="sw" style="background:${colorVar}"></span>Vendido</span><span class="v">${fmtBRLFull(val)}</span></div>`;
+    tooltip.classList.add('visible');
+    const hostRect = host.getBoundingClientRect();
+    let left = (ev.clientX - hostRect.left) + 14;
+    if (left + 160 > hostRect.width) left = (ev.clientX - hostRect.left) - 174;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = '4px';
+  });
+  hitTarget.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+}
+
+function renderCvDailyChart() {
+  document.getElementById('cv-month-label').textContent = CV.monthTab;
+  svgDailyBars(document.getElementById('cv-daily-chart'), CV.dailyTotal, 'var(--accent)', { W: 1180, H: 190, fontSize: 11 });
+}
+
+function renderCvCumulativeChart() {
+  const host = document.getElementById('cv-cumulative-chart');
+  const W = 1180, H = 220, padL = 50, padR = 16, padT = 12, padB = 24;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const numDays = CV.days.length;
+  const realVals = CV.cumulativeReal.filter(v => v != null);
+  const allVals = realVals.concat(CV.projecaoMeta || []);
+  const maxVal = Math.max(...allVals, 1) * 1.08;
+  const x = (i) => padL + (innerW * i / (numDays - 1));
+  const y = (v) => padT + innerH - (v / maxVal) * innerH;
+
+  let bands = '';
+  (CV.weekends || []).forEach((isWeekend, i) => {
+    if (!isWeekend) return;
+    const bx = x(i) - (innerW / numDays) / 2;
+    bands += `<rect class="weekend-band" x="${bx.toFixed(1)}" y="${padT}" width="${(innerW / numDays).toFixed(1)}" height="${innerH}"/>`;
+  });
+
+  const yTicks = 4;
+  let gridSvg = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const yy = padT + innerH - (innerH * i / yTicks);
+    const val = maxVal * i / yTicks;
+    gridSvg += `<line class="grid-line" x1="${padL}" x2="${W - padR}" y1="${yy}" y2="${yy}"/>`;
+    gridSvg += `<text x="${padL - 8}" y="${yy + 3}" text-anchor="end" font-size="9.5">${val >= 1000 ? Math.round(val/1000) + 'k' : Math.round(val)}</text>`;
+  }
+  let xTicks = '';
+  [1, 5, 10, 15, 20, 25, numDays].forEach(d => {
+    if (d > numDays) return;
+    xTicks += `<text x="${x(d-1)}" y="${H - 6}" text-anchor="middle" font-size="9.5">${d}</text>`;
+  });
+
+  const realPts = CV.cumulativeReal.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
+  const realPath = realPts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const areaPath = realPts.length ? realPath + ` L${realPts[realPts.length-1][0].toFixed(1)},${(padT+innerH).toFixed(1)} L${realPts[0][0].toFixed(1)},${(padT+innerH).toFixed(1)} Z` : '';
+  const metaPath = (CV.projecaoMeta || []).map((v, i) => (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  const lastReal = realPts[realPts.length - 1];
+
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Evolução acumulada de vendas vs meta">
+    ${bands}
+    ${gridSvg}
+    <line class="axis-line" x1="${padL}" x2="${W - padR}" y1="${padT + innerH}" y2="${padT + innerH}"/>
+    ${metaPath ? `<path class="line-meta-proj" d="${metaPath}"/>` : ''}
+    ${areaPath ? `<path class="area-fill" d="${areaPath}" fill="var(--accent)" stroke="none"/>` : ''}
+    ${realPath ? `<path class="line-path" d="${realPath}" stroke="var(--accent)"/>` : ''}
+    ${lastReal ? `<circle class="dot-endpoint" cx="${lastReal[0].toFixed(1)}" cy="${lastReal[1].toFixed(1)}" fill="var(--accent)"><title>Acumulado até dia ${CV.stats.diasElapsed}: ${fmtBRLFull(CV.cumulativeReal[CV.stats.diasElapsed-1] || 0)}</title></circle>` : ''}
+    ${xTicks}
+  </svg>`;
+}
+
+function renderCvConversionCards() {
+  const grid = document.getElementById('cv-conversion-grid');
+  grid.innerHTML = '';
+  const order = DATA.vendors.concat(['Total']);
+  order.forEach(name => {
+    const c = CV.conversion[name];
+    if (!c) return;
+    const ok = c.taxa >= 0.25;
+    const colorVar = name === 'Total' ? 'var(--v-total)' : (CV_VENDOR_COLOR[name] || 'var(--v-total)');
+    grid.appendChild(el('div', { class: 'card conv-card', style: `border-top-color:${colorVar}` },
+      el('div', { class: 'conv-name' }, name === 'Total' ? 'Time · Total' : name),
+      el('div', { class: 'conv-rate tabular' }, fmtPct(c.taxa)),
+      el('div', { class: 'conv-foot' }, `${fmtInt(c.leads)} leads · ${fmtInt(c.vendas)} vendas`),
+      el('span', { class: 'pill ' + (ok ? 'good' : 'warning') }, ok ? 'Acima do ideal' : 'Abaixo do ideal')
+    ));
+  });
+}
+
+function renderCvVendorsGrid() {
+  const grid = document.getElementById('cv-vendors-grid');
+  grid.innerHTML = '';
+  const entries = DATA.vendors.map(v => [v, CV.dailyByVendor[v]]).concat([['Maria', CV.dailyMaria]]);
+  entries.forEach(([name, series]) => {
+    if (!series) return;
+    const card = el('div', { class: 'card mini-chart-card' },
+      el('div', { class: 'mini-chart-title' },
+        el('span', { class: 'sw', style: `background:${CV_VENDOR_COLOR[name]}` }),
+        name === 'Maria' ? 'Maria (renovações)' : name)
+    );
+    grid.appendChild(card);
+    const host = el('div', {});
+    card.appendChild(host);
+    const active = series.filter(v => v > 0);
+    const avg = active.length ? active.reduce((a, b) => a + b, 0) / active.length : 0;
+    svgDailyBarsWithRef(host, series, CV_VENDOR_COLOR[name], avg, { W: 560, H: 210, fontSize: 10.5 });
+  });
+}
+
+function svgDailyBarsWithRef(host, series, colorVar, refVal, opts) {
+  svgDailyBars(host, series, colorVar, opts);
+  if (!refVal) return;
+  const svg = host.querySelector('svg');
+  const W = opts.W || 620, H = opts.H || 190, padL = 42, padR = 10, padT = 10, padB = 22;
+  const innerH = H - padT - padB;
+  const maxVal = Math.max(...series, 1) * 1.15;
+  const yy = padT + innerH - (refVal / maxVal) * innerH;
+  const refLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  refLine.setAttribute('class', 'line-ref');
+  refLine.setAttribute('x1', padL); refLine.setAttribute('x2', W - padR);
+  refLine.setAttribute('y1', yy); refLine.setAttribute('y2', yy);
+  svg.appendChild(refLine);
+}
+
+function renderControleVendas() {
+  if (!CV) return;
+  ['cv-section', 'cv-cumulative-section', 'cv-conversion-section', 'cv-vendors-section'].forEach(id => {
+    document.getElementById(id).style.display = '';
+  });
+  renderCvStats();
+  renderCvDailyChart();
+  renderCvCumulativeChart();
+  renderCvConversionCards();
+  renderCvVendorsGrid();
+}
+
+// ---------- Renovações (Maria) ----------
+function renderRenovacoes() {
+  const tabBtn = document.querySelector('#page-tabs button[data-tab="renovacoes"]');
+  if (!CV || !CV.renovacoes) {
+    if (tabBtn) tabBtn.style.display = 'none';
+    return;
+  }
+  const r = CV.renovacoes;
+  const pctClass = (r.pctMeta || 0) >= 1 ? 'good' : ((r.pctMeta || 0) >= 0.85 ? 'warning' : 'critical');
+  const grid = document.getElementById('ren-kpi-grid');
+  grid.innerHTML = '';
+  const tiles = [
+    { label: 'Faturamento (renovações)', value: fmtBRL(r.realizadoR), foot: 'Maria · no mês' },
+    { label: '% da meta', value: fmtPct(r.pctMeta || 0), pill: { cls: pctClass, text: (r.pctMeta || 0) >= 1 ? 'na meta' : 'abaixo' } },
+    { label: 'Meta', value: fmtBRL(r.metaR), foot: 'no mês' },
+    { label: 'Média diária', value: fmtBRL(r.mediaDiariaR) },
+    { label: 'Faltam', value: fmtBRL(r.faltamR), foot: 'pra bater a meta' },
+  ];
+  tiles.forEach(t => {
+    grid.appendChild(el('div', { class: 'card kpi-tile' },
+      el('div', { class: 'kpi-label' }, t.label),
+      el('div', { class: 'kpi-value tabular' }, t.value),
+      el('div', { class: 'kpi-foot' },
+        t.pill ? el('span', { class: 'pill ' + t.pill.cls }, t.pill.text) : null,
+        t.foot ? el('span', {}, t.foot) : null
+      )
+    ));
+  });
+
+  const statsGrid = document.getElementById('ren-stats');
+  statsGrid.innerHTML = '';
+  const st = CV.renovacoesStats;
+  const statTiles = [
+    { label: 'Melhor dia', value: fmtBRL(st.melhorDia) },
+    { label: 'Média dia ativo', value: fmtBRL(st.mediaDiaAtivo) },
+    { label: 'Dias com venda', value: `${st.diasComVenda} / ${st.diasElapsed}`, foot: 'dias decorridos no mês' },
+  ];
+  statTiles.forEach(t => {
+    statsGrid.appendChild(el('div', { class: 'stat-mini' },
+      el('div', { class: 'stat-mini-label' }, t.label),
+      el('div', { class: 'stat-mini-value tabular' }, t.value),
+      t.foot ? el('div', { class: 'kpi-foot' }, t.foot) : null
+    ));
+  });
+
+  svgDailyBars(document.getElementById('ren-daily-chart'), CV.dailyMaria, 'var(--v-maria)', { W: 1180, H: 190, fontSize: 11 });
+}
+
+// ---------- navegação por abas ----------
+const TABS = ['overview', 'transacoes', 'renovacoes'];
+document.getElementById('page-tabs').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button'); if (!btn) return;
+  const tab = btn.dataset.tab;
+  TABS.forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+  });
+  [...document.getElementById('page-tabs').children].forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+});
+
+function renderAll() {
+  renderVendorFilter();
+  renderKpis();
+  renderBarChart();
+  renderTrendLegend();
+  renderTrendChart();
+  renderTable();
+  renderControleVendas();
+  renderRenovacoes();
+  renderPlanBreakdown();
+  renderFootnote();
+}
+refreshHeaderForMonth();
+renderMonthFilter();
+renderAll();
+
+// sincroniza os botões estáticos (categoria/métrica/aba) com o estado restaurado da URL
+document.querySelectorAll('#cat-toggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cat === state.cat)));
+document.querySelectorAll('#metric-toggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.metric === state.metric)));
+if (restoreTab && TABS.includes(restoreTab) && restoreTab !== 'overview') {
+  const btn = document.querySelector(`#page-tabs button[data-tab="${restoreTab}"]`);
+  if (btn && btn.style.display !== 'none') {
+    TABS.forEach(t => { document.getElementById('tab-' + t).style.display = t === restoreTab ? '' : 'none'; });
+    [...document.getElementById('page-tabs').children].forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  }
+}
+
+window.addEventListener('resize', () => {
+  renderBarChart(); renderTrendChart();
+  if (CV) { renderCvDailyChart(); renderCvCumulativeChart(); renderCvVendorsGrid(); }
+  if (CV && CV.renovacoes) svgDailyBars(document.getElementById('ren-daily-chart'), CV.dailyMaria, 'var(--v-maria)', { W: 1180, H: 190, fontSize: 11 });
+});
+
+// ---------- auto-atualização da página ----------
+// Recarrega sozinha de tempos em tempos pra quem deixa a aba aberta ver os
+// dados mais recentes sem precisar apertar F5. Antes de recarregar, guarda o
+// filtro/aba atual na URL (lidos no bloco de restauração acima) pra não
+// perder o que a pessoa estava vendo.
+(function setupAutoRefresh() {
+  const REFRESH_MS = 5 * 60 * 1000; // 5 minutos
+  function currentActiveTab() {
+    const btn = document.querySelector('#page-tabs button[aria-pressed="true"]');
+    return btn ? btn.dataset.tab : 'overview';
+  }
+  function persistViewStateToUrl() {
+    try {
+      const params = new URLSearchParams();
+      if (state.month && state.month !== MONTHS_ORDER[0]) params.set('mes', state.month);
+      if (state.vendor && state.vendor !== 'Todos') params.set('vendedor', state.vendor);
+      if (state.cat && state.cat !== 'mensal') params.set('cat', state.cat);
+      if (state.metric && state.metric !== 'valor') params.set('metrica', state.metric);
+      const tab = currentActiveTab();
+      if (tab !== 'overview') params.set('aba', tab);
+      const qs = params.toString();
+      history.replaceState(null, '', qs ? ('?' + qs) : location.pathname);
+    } catch (e) { /* URL inacessível — recarrega sem preservar filtro */ }
+  }
+  setInterval(() => {
+    persistViewStateToUrl();
+    location.reload();
+  }, REFRESH_MS);
+})();
+</script>

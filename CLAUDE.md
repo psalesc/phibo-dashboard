@@ -188,8 +188,16 @@ corrente quanto ao histórico:
    painel antigo e o Pedro usam), não da soma dos blocos "Vendas Diárias -
    <vendedor>". Achado 15/10: em outubro os blocos diários por vendedor
    estavam ~R$22k atrás do Realizado (Bruno 40.219 vs 48.691), embora o
-   bloco diário "Total" batesse. O TOTAL continua vindo do bloco diário
-   "Total". Em setembro a soma do Realizado por vendedor (R$532.572) fica
+   bloco diário "Total" batesse. O TOTAL vem da linha "Total" da coluna
+   Realizado quando ela tem valor (em outubro o bloco diário "Total" também
+   ficou atrás da tabela-resumo ao longo do dia); em ago/set essa célula está
+   vazia e o total cai no bloco diário "Total" (valores validados).
+   **Exceção pendente:** a aba Setembro TEM a linha Total do Realizado
+   (R$532.572,43), R$596 abaixo do bloco diário (R$533.168,43, o valor
+   validado). Pedro preferiu não decidir agora; o
+   `historical/setembro_2026.json` publicado foi gerado ANTES dessa regra e
+   mantém R$533.168,43. Regerar setembro com o código atual daria
+   R$532.572,43 — não regerar sem o Pedro confirmar qual é o certo. Em setembro a soma do Realizado por vendedor (R$532.572) fica
    R$596 abaixo do total (R$533.168) — diferença da própria planilha.
 2. **Fechamentos vêm da contagem real de `records`, não de uma fórmula de
    intervalo fixo na planilha do vendedor** (`recompute_fechamentos_from_records()`).

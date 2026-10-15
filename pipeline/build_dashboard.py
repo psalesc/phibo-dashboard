@@ -371,10 +371,21 @@ def reconcile_kpis_with_cv(data, cv):
     if is_num(meta_total_cv):
         data['total']['metaR'] = meta_total_cv
 
+    # Faturamento POR VENDEDOR: coluna "Realizado" da tabela-resumo da
+    # Controle Vendas (a que o Pedro confere e o painel antigo usa). A soma
+    # dos blocos "Vendas Diárias - <vendedor>" fica só como reserva — achado
+    # Pedro, 15/10/2026: em outubro esses blocos diários por vendedor estavam
+    # ~R$22k atrás do Realizado (Bruno 40.219 vs 48.691; Samuel 59.876 vs
+    # 69.756), enquanto o bloco "Total" diário batia. O TOTAL continua vindo
+    # de dailyTotal (valores de ago/set já validados).
+    realizado_cv = cv.get('realizadoByVendor') or {}
     for v, series in cv['dailyByVendor'].items():
         if v not in data['kpis']:
             continue
-        fat = round(sum(series), 2)
+        fat = realizado_cv.get(v)
+        if not is_num(fat):
+            fat = round(sum(series), 2)
+        fat = round(fat, 2)
         data['kpis'][v]['faturamentoR'] = fat
         meta = data['kpis'][v].get('metaR')
         data['kpis'][v]['pctMeta'] = (fat / meta) if is_num(meta) and meta else None
@@ -568,14 +579,18 @@ def build_controle_vendas(xlsx_path, month_tab=None, meta_total=None, num_days=N
     # refletia os R$177.000 corretos). Localizada por busca de texto (não
     # linha fixa) pra resistir a pequenos deslocamentos de layout.
     metas_by_vendor = {}
+    realizado_by_vendor = {}
     meta_total_cv = None
     for r in range(1, ws.max_row + 1):
         if str(ws.cell(row=r, column=1).value or '').strip().lower() == 'vendedor':
             meta_col = None
+            realizado_col = None
             for c in range(1, 12):
-                if str(ws.cell(row=r, column=c).value or '').strip().lower() == 'meta':
+                label = str(ws.cell(row=r, column=c).value or '').strip().lower()
+                if label == 'meta' and meta_col is None:
                     meta_col = c
-                    break
+                elif label == 'realizado' and realizado_col is None:
+                    realizado_col = c
             if meta_col:
                 rr = r + 1
                 while True:
@@ -587,6 +602,10 @@ def build_controle_vendas(xlsx_path, month_tab=None, meta_total=None, num_days=N
                         meta_total_cv = meta_val if is_num(meta_val) else None
                         break
                     metas_by_vendor[str(nome).strip()] = meta_val if is_num(meta_val) else None
+                    if realizado_col:
+                        real_val = ws.cell(row=rr, column=realizado_col).value
+                        if is_num(real_val):
+                            realizado_by_vendor[str(nome).strip()] = real_val
                     rr += 1
             break
 
@@ -671,6 +690,7 @@ def build_controle_vendas(xlsx_path, month_tab=None, meta_total=None, num_days=N
         'renovacoes': renovacoes,
         'renovacoesStats': maria_stats,
         'metasByVendor': metas_by_vendor,
+        'realizadoByVendor': realizado_by_vendor,
         'metaTotalCV': meta_total_cv,
     }
 

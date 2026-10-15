@@ -183,6 +183,14 @@ corrente quanto ao histórico:
    tinha a meta antiga, a Controle Vendas já tinha a corrigida. A Controle
    Vendas é preenchida manualmente pelo Pedro e é o que ele realmente
    confere — por isso prevalece, sempre que disponível.
+   **Por vendedor (desde 15/10/2026):** o faturamento de cada vendedor vem
+   da coluna **"Realizado"** da tabela-resumo do topo da aba (a mesma que o
+   painel antigo e o Pedro usam), não da soma dos blocos "Vendas Diárias -
+   <vendedor>". Achado 15/10: em outubro os blocos diários por vendedor
+   estavam ~R$22k atrás do Realizado (Bruno 40.219 vs 48.691), embora o
+   bloco diário "Total" batesse. O TOTAL continua vindo do bloco diário
+   "Total". Em setembro a soma do Realizado por vendedor (R$532.572) fica
+   R$596 abaixo do total (R$533.168) — diferença da própria planilha.
 2. **Fechamentos vêm da contagem real de `records`, não de uma fórmula de
    intervalo fixo na planilha do vendedor** (`recompute_fechamentos_from_records()`).
    Achado 15/09: o KPI "Fechamentos" não batia com o número de linhas na
@@ -252,6 +260,13 @@ resumo, coluna "Meta") — sem isso o painel mostra Meta R$0/0% nesse mês
 (comportamento esperado, não é bug).
 
 ## Publicação — GitHub Pages
+
+**Endereços (15/10/2026):** o painel novo (este pipeline) é publicado em
+`psalesc.github.io/phibo-dashboard/painel/` (arquivo `painel/index.html`).
+O `index.html` da raiz é OUTRO painel, mais antigo ("Phibo — Controle de
+Vendas", mantido à mão pelo Pedro) — o workflow NÃO pode sobrescrevê-lo.
+Na primeira rodada do Actions ele foi sobrescrito por engano e restaurado a
+partir do commit `0d69c78484`.
 
 Decisão desta migração: o painel passa a ser publicado em
 `psalesc.github.io/phibo-dashboard` (repo `psalesc/phibo-dashboard`, que o

@@ -1,0 +1,16 @@
+# Credencial da service account do Google — NUNCA fazer commit disso.
+pipeline/service_account.json
+
+# Snapshots .xlsx baixados a cada rodada (são gerados de novo a cada vez;
+# não precisam ficar versionados, e podem conter dados de cliente).
+pipeline/master_latest.xlsx
+pipeline/controle_vendas.xlsx
+pipeline/samuel.xlsx
+pipeline/marina.xlsx
+pipeline/bruno.xlsx
+
+__pycache__/
+*.pyc
+
+# Saída local do build (o que vai pro ar é o index.html na raiz, gerado pelo Actions).
+pipeline/dashboard.html

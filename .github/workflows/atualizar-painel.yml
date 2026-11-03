@@ -44,7 +44,7 @@ jobs:
 
       - name: Gerar o painel
         working-directory: pipeline
-        run: python build_dashboard.py master_latest.xlsx dashboard.html controle_vendas.xlsx
+        run:    python build_historical.py --auto && python build_dashboard.py master_latest.xlsx dashboard.html controle_vendas.xlsx
 
       - name: Publicar no GitHub Pages
         run: |
@@ -52,7 +52,7 @@ jobs:
           cp pipeline/dashboard.html painel/index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add painel/index.html
+          git add painel/index.html     pipeline/historical
           if git diff --cached --quiet; then echo "Sem mudanças."; exit 0; fi
           git commit -m "Atualiza painel — $(date '+%d/%m/%Y %H:%M')"
           git push

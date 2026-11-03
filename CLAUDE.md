@@ -167,6 +167,17 @@ Se esses números não baterem, o problema mais provável é planilha de
 vendedor desatualizada — re-baixe os 5 arquivos (ver "Lições de processo"
 abaixo, rodada 14) antes de desconfiar do código.
 
+## Fechamento automático do mês anterior (desde 03/11/2026)
+
+O workflow roda `build_historical.py --auto` antes do build: ele gera
+`historical/<mês anterior>_<ano>.json` a partir das planilhas de vendedor +
+Controle Vendas já baixadas, regerando a cada rodada até o dia 7 do mês novo
+(pega lançamentos atrasados) e depois congelando. Nunca mexe em meses mais
+antigos (setembro continua com o valor validado). O workflow faz commit de
+`pipeline/historical` junto com `painel/index.html`. Motivo: em 03/11 o
+painel virou pra novembro e outubro sumiu do seletor, porque o histórico de
+outubro nunca tinha sido gerado.
+
 ## Regras de reconciliação de dados — NÃO REVERTER sem entender o porquê
 
 Estas três correções existem porque os números "nativos" de cada planilha

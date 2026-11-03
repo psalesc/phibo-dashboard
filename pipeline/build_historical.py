@@ -10,6 +10,15 @@ Uso:
         <samuel.xlsx> <marina.xlsx> <bruno.xlsx> \
         <controle_vendas.xlsx> [updated_at_label]
 
+Modo automático (usado pelo GitHub Actions a cada rodada):
+    python3 build_historical.py --auto
+
+    Fecha o MÊS ANTERIOR sozinho, a partir de samuel/marina/bruno.xlsx e
+    controle_vendas.xlsx na pasta atual (os que fetch_sheets.py baixa).
+    Até o dia AUTO_REFRESH_DAYS do mês novo ele regera o mês anterior a
+    cada rodada (pega lançamentos atrasados); depois disso só gera se o
+    arquivo ainda não existir — e nunca mexe em meses mais antigos.
+
 Exemplo (Agosto/2026):
     python3 build_historical.py Agosto 2026 08 \
         samuel.xlsx marina.xlsx bruno.xlsx controle_vendas.xlsx \
@@ -26,7 +35,37 @@ from build_dashboard import (
 )
 
 
+AUTO_REFRESH_DAYS = 7
+
+
+def auto_args():
+    """Argumentos equivalentes à chamada manual, para o mês anterior, ou None
+    se não há nada a fazer."""
+    import datetime
+    today = datetime.date.today()
+    first = today.replace(day=1)
+    prev = first - datetime.timedelta(days=1)
+    mes = MESES_PT[prev.month]
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    out_path = os.path.join(script_dir, 'historical', f'{mes.lower()}_{prev.year}.json')
+    if os.path.exists(out_path) and today.day > AUTO_REFRESH_DAYS:
+        print(f'INFO: {os.path.basename(out_path)} já existe e o mês já passou do dia '
+              f'{AUTO_REFRESH_DAYS} — histórico congelado, nada a fazer.')
+        return None
+    files = ['samuel.xlsx', 'marina.xlsx', 'bruno.xlsx', 'controle_vendas.xlsx']
+    missing = [f for f in files if not os.path.exists(f)]
+    if missing:
+        print(f'AVISO: modo --auto sem {missing} na pasta atual — histórico de {mes} não gerado.')
+        return None
+    return [sys.argv[0], mes, str(prev.year), f'{prev.month:02d}', *files, f'{mes}/{prev.year} (fechado)']
+
+
 def main():
+    if sys.argv[1:] == ['--auto']:
+        args = auto_args()
+        if not args:
+            return
+        sys.argv = args
     if len(sys.argv) < 8:
         print(__doc__)
         sys.exit(1)

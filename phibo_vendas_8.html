@@ -20,6 +20,10 @@
   .logo { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
   h1 { font-size: 22px; font-weight: 500; line-height: 1.2; }
   .meta-info { font-size: 13px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .month-tabs { display: flex; background: var(--surface2); border-radius: var(--radius); padding: 3px; gap: 3px; }
+  .month-tab { padding: 6px 16px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--text2); transition: all .15s; }
+  .month-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
   .btn-refresh { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--text); color: #fff; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
   .btn-refresh:hover { opacity: .8; }
   .btn-refresh.loading { opacity: .5; pointer-events: none; }
@@ -74,21 +78,35 @@
 <header>
   <div>
     <div class="logo">Phibo · Dashboard</div>
-    <h1>Controle de vendas — maio</h1>
+    <h1 id="titulo">Controle de vendas — novembro</h1>
     <div class="meta-info" id="upd-info">Carregando...</div>
   </div>
-  <button class="btn-refresh" id="btn-refresh" onclick="loadData()">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12.5 7A5.5 5.5 0 1 1 7 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 1.5h3.5V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    Atualizar
-  </button>
+  <div class="header-right">
+    <div class="month-tabs">
+      <button class="month-tab active" onclick="trocarMes('Novembro')">Novembro</button>
+      <button class="month-tab" onclick="trocarMes('Outubro')">Outubro</button>
+      <button class="month-tab" onclick="trocarMes('Setembro')">Setembro</button>
+      <button class="month-tab" onclick="trocarMes('Agosto')">Agosto</button>
+      <button class="month-tab" onclick="trocarMes('Julho')">Julho</button>
+      <button class="month-tab" onclick="trocarMes('Junho')">Junho</button>
+      <button class="month-tab" onclick="trocarMes('Maio')">Maio</button>
+    </div>
+    <button class="btn-refresh" id="btn-refresh" onclick="loadData()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12.5 7A5.5 5.5 0 1 1 7 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 1.5h3.5V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Atualizar
+    </button>
+  </div>
 </header>
 <div id="main">
   <div class="loading-state"><div class="spinner"></div><div>Buscando dados da planilha...</div></div>
 </div>
+
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbw4UvTi6dsh4lWPpnQeGd_Q6cYBFDVUmbKH_vS87qOQrc_SrYiGFj6uZD9h95JLFCdBRw/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwWIi8mSUxdD3R0A9xMGxqnHLzYIzEZfbcdjwmz0ke1gSmnfGpPsAah4qjT2n1b1z9E/exec';
+const DIAS_MES = { 'Novembro': 30, 'Outubro': 31, 'Setembro': 30, 'Agosto': 31, 'Julho': 31, 'Junho': 30, 'Maio': 31 };
 const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed'];
 let charts = {};
+let mesSelecionado = 'Novembro';
 
 function brl(v) {
   if (v === null || v === undefined || v === '') return 0;
@@ -112,40 +130,36 @@ function convFlag(rate) {
   return              { cls: 'att', icon: '⚠', label: 'Abaixo do ideal' };
 }
 
+function trocarMes(mes) {
+  mesSelecionado = mes;
+  document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('titulo').textContent = `Controle de vendas — ${mes.toLowerCase()}`;
+  loadData();
+}
+
 function parseConvData(rows) {
-  // Encontra o cabeçalho: linha que tem "Leads" e "Vendas" e "Taxa de conversão"
   const headerIdx = rows.findIndex(r =>
     r.some(c => String(c).toLowerCase().trim() === 'leads') &&
     r.some(c => String(c).toLowerCase().trim() === 'vendas')
   );
   if (headerIdx < 0) return { map: {}, total: 0 };
-
   const map = {};
   let total = 0;
-
-  // Lê as linhas após o cabeçalho até encontrar uma linha vazia ou non-matching
   for (let i = headerIdx + 1; i < Math.min(headerIdx + 6, rows.length); i++) {
     const r = rows[i];
     const name = String(r[0] || '').toLowerCase().trim();
     if (!name) continue;
-
-    // Formato: [nome, leads, vendas, taxa_decimal, ...]
     const leads  = typeof r[1] === 'number' ? r[1] : parseFloat(r[1]) || 0;
     const vendas = typeof r[2] === 'number' ? r[2] : parseFloat(r[2]) || 0;
     const taxa   = typeof r[3] === 'number' ? r[3] : parseFloat(r[3]) || 0;
-
-    if (name === 'total') {
-      total = taxa;
-    } else {
-      map[name] = { leads, vendas, taxa };
-    }
+    if (name === 'total') { total = taxa; } else { map[name] = { leads, vendas, taxa }; }
   }
-
   return { map, total };
 }
 
-function parseDailyData(rows) {
-  const daily = Array(31).fill(null);
+function parseDailyData(rows, diasMes) {
+  const daily = Array(diasMes).fill(null);
   rows.forEach(row => {
     const dateCell = row[11];
     const valCell  = row[12];
@@ -158,17 +172,45 @@ function parseDailyData(rows) {
       const slashMatch = dateStr.match(/^(\d{1,2})\/(\d{2})/);
       if (slashMatch) day = parseInt(slashMatch[1], 10);
     }
-    if (!day || day < 1 || day > 31) return;
+    if (!day || day < 1 || day > diasMes) return;
     const val = brl(valCell);
     if (val > 0) daily[day - 1] = val;
   });
   return daily;
 }
 
-function render(rows) {
-  destroyCharts();
+function parseVendorDaily(rows, diasMes) {
+  // Dia 1 = linha 5 (índice 4), coluna Q=16, U=20, Y=24, AC=28
+  const samuel  = Array(diasMes).fill(0);
+  const marina  = Array(diasMes).fill(0);
+  const bruno   = Array(diasMes).fill(0);
+  const maria   = Array(diasMes).fill(0);
+  for (let d = 0; d < diasMes; d++) {
+    const rowIdx = 4 + d;
+    if (rows[rowIdx]) {
+      const s = rows[rowIdx][16]; // coluna Q
+      const u = rows[rowIdx][20]; // coluna U
+      const m = rows[rowIdx][24]; // coluna Y
+      const r = rows[rowIdx][28]; // coluna AC
+      samuel[d] = typeof s === 'number' ? Math.max(0, s) : 0;
+      bruno[d]  = typeof u === 'number' ? Math.max(0, u) : 0;
+      marina[d] = typeof m === 'number' ? Math.max(0, m) : 0;
+      maria[d]  = typeof r === 'number' ? Math.max(0, r) : 0;
+    }
+  }
+  return { samuel, marina, bruno, maria };
+}
 
-  const jRow   = findRow(rows, 'jadilson') || [];
+function render(rows, mes) {
+  destroyCharts();
+  const diasMes = DIAS_MES[mes] || 30;
+
+  // Agosto em diante usa Bruno, meses anteriores usa Jadilson
+  const mesesComBruno = ['Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const nomeVendedor1 = mesesComBruno.includes(mes) ? 'Bruno' : 'Jadilson';
+  const chaveVendedor1 = nomeVendedor1.toLowerCase();
+
+  const jRow   = findRow(rows, chaveVendedor1) || [];
   const mRow   = findRow(rows, 'marina')   || [];
   const sRow   = findRow(rows, 'samuel')   || [];
   const marRow = findRow(rows, 'maria')    || [];
@@ -178,32 +220,43 @@ function render(rows) {
   const sR = brl(sRow[3]),  sM = brl(sRow[5]);
   const mrR = brl(marRow[1]), mrM = brl(marRow[3]);
 
-  const tR = jR+mR+sR, tM = jM+mM+sM;
+  const tR = jR+mR+sR;
+  const mesesComMetaTotal = ['Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let tM;
+  if (mesesComMetaTotal.includes(mes)) {
+    // Busca a linha "Total" da seção Novos e pega a coluna F (índice 5)
+    const totalNovosRow = rows.find((r, idx) => 
+      idx > 3 && idx < 15 && String(r[0]).toLowerCase() === 'total' && brl(r[5]) > 0
+    );
+    const metaF8 = totalNovosRow ? brl(totalNovosRow[5]) : 0;
+    tM = metaF8 > 0 ? metaF8 : jM+mM+sM;
+  } else {
+    tM = jM+mM+sM;
+  }
   const hoje = new Date().getDate();
-  const diasRest = Math.max(1, 31-hoje);
+  const diasRest = Math.max(1, diasMes - hoje);
   const mediaD = hoje > 0 ? tR/hoje : 0;
   const nec = (tM-tR)/diasRest;
   const pctT = pct(tR, tM);
 
   const vends = [
-    {nome:'Jadilson', real:jR, meta:jM},
-    {nome:'Marina',   real:mR, meta:mM},
-    {nome:'Samuel',   real:sR, meta:sM},
+    {nome: nomeVendedor1, real:jR, meta:jM},
+    {nome:'Marina',       real:mR, meta:mM},
+    {nome:'Samuel',       real:sR, meta:sM},
   ];
 
   const { map: convMap, total: totalConvTaxa } = parseConvData(rows);
-
   const convVends = [
-    { nome: 'Jadilson', ...(convMap['jadilson'] || {}) },
-    { nome: 'Marina',   ...(convMap['marina']   || {}) },
-    { nome: 'Samuel',   ...(convMap['samuel']   || {}) },
+    { nome: nomeVendedor1, ...(convMap[chaveVendedor1] || {}) },
+    { nome: 'Marina',      ...(convMap['marina']       || {}) },
+    { nome: 'Samuel',      ...(convMap['samuel']       || {}) },
   ];
 
-  const daily = parseDailyData(rows);
+  const daily = parseDailyData(rows, diasMes);
   let acc = 0;
-  const accArr = Array(31).fill(null);
+  const accArr = Array(diasMes).fill(null);
   daily.forEach((v,i) => { if(v!==null){acc+=v; accArr[i]=Math.round(acc);} });
-  const proj = Array.from({length:31}, (_,i) => Math.round(tM/31*(i+1)));
+  const proj = Array.from({length:diasMes}, (_,i) => Math.round(tM/diasMes*(i+1)));
   const dailyVals   = daily.map(v => v !== null ? v : 0);
   const dailyColors = dailyVals.map(v => v > 0 ? '#2563eb' : 'rgba(0,0,0,0.07)');
   const ativos      = daily.filter(v => v !== null && v > 0);
@@ -212,6 +265,8 @@ function render(rows) {
   const diasPos     = ativos.length;
   const totalLeads  = convVends.reduce((a,v) => a + (v.leads||0), 0);
   const totalVendas = convVends.reduce((a,v) => a + (v.vendas||0), 0);
+  const vendorDaily = parseVendorDaily(rows, diasMes);
+  const diasLabels  = Array.from({length:diasMes}, (_,i) => `${i+1}`);
 
   document.getElementById('main').innerHTML = `
     <div class="section-label">Visão geral</div>
@@ -238,9 +293,7 @@ function render(rows) {
       </div>
     </div>
 
-
-
-    <div class="section-label">Vendas por dia — maio</div>
+    <div class="section-label">Vendas por dia — ${mes.toLowerCase()}</div>
     <div class="chart-card-full">
       <div class="chart-title">Receita diária (R$)</div>
       <div class="chart-sub">apenas dias com venda registrada</div>
@@ -260,7 +313,7 @@ function render(rows) {
         </div>
       </div>
       <div style="position:relative;height:220px">
-        <canvas id="c-day" role="img" aria-label="Receita por dia em maio"></canvas>
+        <canvas id="c-day" role="img" aria-label="Receita por dia"></canvas>
       </div>
     </div>
 
@@ -323,20 +376,42 @@ function render(rows) {
     </div>
 
     <div class="chart-card-full">
-      <div class="chart-title">Evolução acumulada — maio</div>
+      <div class="chart-title">Evolução acumulada — ${mes.toLowerCase()}</div>
       <div class="legend">
         <div class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Acumulado real</div>
         <div class="legend-item"><span class="legend-dot" style="background:#dc2626;opacity:.5"></span>Projeção da meta</div>
       </div>
-      <div style="position:relative;height:200px"><canvas id="c3" role="img" aria-label="Acumulado de vendas em maio"></canvas></div>
+      <div style="position:relative;height:200px"><canvas id="c3" role="img" aria-label="Acumulado de vendas"></canvas></div>
     </div>
 
-    <div class="footer">Phibo · ao vivo · dia ${hoje}/31 · ${diasRest} dias restantes</div>
+    <div class="section-label" style="margin-top:1rem">Vendas diárias por vendedor</div>
+    <div class="charts-row" style="margin-bottom:12px">
+      <div class="chart-card">
+        <div class="chart-title" style="font-size:12px;margin-bottom:8px">Samuel</div>
+        <div style="position:relative;height:160px"><canvas id="cv-samuel" role="img" aria-label="Vendas diárias Samuel"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="font-size:12px;margin-bottom:8px">Marina</div>
+        <div style="position:relative;height:160px"><canvas id="cv-marina" role="img" aria-label="Vendas diárias Marina"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-row" style="margin-bottom:12px">
+      <div class="chart-card">
+        <div class="chart-title" style="font-size:12px;margin-bottom:8px">Bruno</div>
+        <div style="position:relative;height:160px"><canvas id="cv-bruno" role="img" aria-label="Vendas diárias Bruno"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="font-size:12px;margin-bottom:8px">Maria (renovações)</div>
+        <div style="position:relative;height:160px"><canvas id="cv-maria" role="img" aria-label="Vendas diárias Maria"></canvas></div>
+      </div>
+    </div>
+
+    <div class="footer">Phibo · ao vivo · ${mes.toLowerCase()} · dia ${hoje}/${diasMes} · ${diasRest} dias restantes</div>
   `;
 
   charts.day = new Chart(document.getElementById('c-day'), {
     type:'bar',
-    data:{ labels:Array.from({length:31},(_,i)=>`${i+1}`), datasets:[{data:dailyVals, backgroundColor:dailyColors, borderRadius:4, borderSkipped:false}] },
+    data:{ labels:Array.from({length:diasMes},(_,i)=>`${i+1}`), datasets:[{data:dailyVals, backgroundColor:dailyColors, borderRadius:4, borderSkipped:false}] },
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.raw>0?fmtBRL(ctx.raw):''}} },
       scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:11}}, grid:{color:'rgba(0,0,0,0.05)'}}, x:{ticks:{autoSkip:true,maxTicksLimit:16,font:{size:10}}, grid:{display:false}} } }
@@ -361,13 +436,40 @@ function render(rows) {
 
   charts.c3 = new Chart(document.getElementById('c3'), {
     type:'line',
-    data:{ labels:Array.from({length:31},(_,i)=>i+1), datasets:[
+    data:{ labels:Array.from({length:diasMes},(_,i)=>i+1), datasets:[
       {label:'Acumulado',data:accArr,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.07)',fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:'#2563eb',spanGaps:false},
       {label:'Meta',data:proj,borderColor:'rgba(220,38,38,0.4)',borderDash:[5,4],pointRadius:0,fill:false}
     ]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
       scales:{ y:{ticks:{callback:v=>'R$'+(v/1000).toFixed(0)+'k',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}, x:{ticks:{autoSkip:true,maxTicksLimit:10,font:{size:11}},grid:{display:false}} } }
   });
+
+  function miniBarChart(canvasId, data, color, metaMensal, diasMes) {
+    const metaDiaria = metaMensal / 26;
+    return new Chart(document.getElementById(canvasId), {
+      type:'bar',
+      data:{ labels:diasLabels, datasets:[
+        { data:data, backgroundColor:data.map(v=>v>0?color:'rgba(0,0,0,0.06)'), borderRadius:3, borderSkipped:false, order:2 },
+        { type:'line', data:Array(diasMes).fill(Math.round(metaDiaria)), borderColor:'rgba(220,38,38,0.6)', borderDash:[4,3], borderWidth:1.5, pointRadius:0, fill:false, order:1 }
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===0&&ctx.raw>0?fmtBRL(ctx.raw):ctx.datasetIndex===1?'Meta: '+fmtBRL(ctx.raw):''}} },
+        scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:9}}, grid:{color:'rgba(0,0,0,0.04)'}}, x:{ticks:{autoSkip:false, maxRotation:0, font:{size:8}}, grid:{display:false}} }
+      }
+    });
+  }
+
+  charts.cvs = miniBarChart('cv-samuel', vendorDaily.samuel, '#2563eb', 220000, diasMes);
+  charts.cvm = miniBarChart('cv-marina', vendorDaily.marina, '#16a34a', 220000, diasMes);
+  charts.cvb = new Chart(document.getElementById('cv-bruno'), {
+    type:'bar',
+    data:{ labels:diasLabels, datasets:[{data:vendorDaily.bruno, backgroundColor:vendorDaily.bruno.map(v=>v>0?'#d97706':'rgba(0,0,0,0.06)'), borderRadius:3, borderSkipped:false}] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.raw>0?fmtBRL(ctx.raw):''}} },
+      scales:{ y:{min:0, ticks:{callback:v=>fmtShort(v),font:{size:9}}, grid:{color:'rgba(0,0,0,0.04)'}}, x:{ticks:{autoSkip:false, maxRotation:0, font:{size:8}}, grid:{display:false}} }
+    }
+  });
+  charts.cvr = miniBarChart('cv-maria',  vendorDaily.maria,  '#7c3aed', 120000, diasMes);
 }
 
 async function loadData() {
@@ -375,11 +477,12 @@ async function loadData() {
   btn.classList.add('loading');
   document.getElementById('upd-info').textContent = 'Atualizando...';
   try {
-    const res = await fetch(API);
+    const url = `${API}?aba=${encodeURIComponent(mesSelecionado)}`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!Array.isArray(rows)||rows.length===0) throw new Error('Planilha vazia ou sem dados');
-    render(rows);
+    render(rows, mesSelecionado);
     const n = new Date();
     document.getElementById('upd-info').textContent = `Atualizado às ${n.getHours()}:${String(n.getMinutes()).padStart(2,'0')} — ao vivo da planilha`;
   } catch(e) {
